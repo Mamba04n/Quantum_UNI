@@ -1,0 +1,66 @@
+import { test, expect } from '@playwright/test';
+
+test.use({ video: 'off' });
+test('direct registration requires an initial choice and expired preferences are requested again', async ({ page }) => {
+    await page.goto('/register', { waitUntil: 'networkidle' });
+    await expect(page.locator('[data-cookie-dialog]')).toBeVisible();
+    await page.locator('[data-cookie-necessary]').click();
+    await page.locator('.auth-cookie-preferences').click();
+    await expect(page.locator('[data-cookie-dialog]')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-cookie-dialog]')).not.toBeVisible();
+    await page.evaluate(() => localStorage.setItem('quantum.storefront.consent.v1', JSON.stringify({ version: 1, necessary: true, external: true, savedAt: Date.now() - 181 * 86400000 })));
+    await page.goto('/productos', { waitUntil: 'networkidle' });
+    await expect(page.locator('[data-cookie-dialog]')).toBeVisible();
+    await expect(page.locator('[data-cookie-external]')).not.toBeChecked();
+});
+test('new visitors choose before continuing; maps load only after consent and can be revoked', async ({ page }, info) => {
+    test.setTimeout(120000);
+    const maps: string[] = [];
+    page.on('request', request => { if (request.url().includes('google.com/maps/embed')) maps.push(request.url()); });
+    await page.setViewportSize({ width: 1440, height: 950 });
+    await page.goto('/contacto', { waitUntil: 'networkidle' });
+    const dialog = page.locator('[data-cookie-dialog]');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    expect(maps).toHaveLength(0);
+    await page.screenshot({ path: info.outputPath('consent-desktop.png') });
+    await page.locator('[data-cookie-necessary]').click();
+    await expect(dialog).not.toBeVisible();
+    await expect(page.locator('iframe[data-consent-src]')).not.toHaveAttribute('src', /./);
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(dialog).not.toBeVisible();
+    expect(maps).toHaveLength(0);
+    await page.locator('[data-map-consent-placeholder] button').click();
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('[data-cookie-external]')).not.toBeChecked();
+    await page.locator('[data-cookie-external]').check();
+    await page.locator('[data-cookie-save]').click();
+    await expect(page.locator('iframe[data-consent-src]')).toHaveAttribute('src', /google.com\/maps/);
+    await page.locator('.footer [data-cookie-open]').click();
+    await page.locator('[data-cookie-necessary]').click();
+    await expect(page.locator('iframe[data-consent-src]')).not.toHaveAttribute('src', /./);
+    await page.evaluate(() => localStorage.setItem('quantum.storefront.consent.v1', 'invalid'));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(dialog).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath('consent-mobile.png') });
+    await page.locator('[data-cookie-necessary]').click();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('quantum.storefront.consent.v1')!).external)).toBe(false);
+});
+
+test('customer entry is clear from cart and catalogue announcements are real links', async ({ page }, info) => {
+    await page.goto('/productos', { waitUntil: 'networkidle' });
+    await page.locator('[data-cookie-necessary]').click();
+    await page.locator('.products-add-btn').first().click();
+    await expect(page.locator('dialog[open].commerce-cart-drawer')).toBeVisible();
+    await page.goto('/carrito', { waitUntil: 'networkidle' });
+    await expect(page.locator('.commerce-account-invite')).toBeVisible();
+    await page.screenshot({ path: info.outputPath('cart-account-entry.png'), fullPage: true });
+    await expect(page.locator('.quantum-campaign--catalogs a')).toHaveAttribute('href', /\/catalogos$/);
+    await page.getByRole('link', { name: 'Ingresar y cotizar' }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.locator('[data-cookie-dialog]')).not.toBeVisible();
+});

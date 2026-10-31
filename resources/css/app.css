@@ -1,0 +1,143 @@
+@import './admin.css';
+@import './preliquidation.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Corporate interaction state, shared by administrative actions and navigation. */
+@media (hover: hover) {
+    .quantum-ui :is(button, a[href], [role="button"], summary, input[type="submit"], input[type="button"], label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):hover {
+        background-color: #6f1220 !important;
+        border-color: #6f1220 !important;
+        color: #fff !important;
+    }
+    .quantum-ui :is(button, a[href], [role="button"], summary, label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):hover :is(span, div, article, svg, p, h1, h2, h3, h4, h5, h6, strong, b, small, em, i) {
+        color: #fff !important;
+    }
+    /* Icon tiles and nested cards must share the dark hover surface: white
+       icons on their original pale background otherwise disappear. */
+    .quantum-ui :is(button, a[href], [role="button"], summary, label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):hover :is(span, div, article, i) {
+        background-color: transparent !important;
+        background-image: none !important;
+    }
+}
+.quantum-ui :is(button, a[href], [role="button"], summary):focus-visible {
+    outline: 2px solid #6f1220;
+    outline-offset: 3px;
+}
+
+@media (max-width: 639px) {
+    .supplier-worksheet { display: block; min-width: 0; }
+    .supplier-worksheet thead { display: none; }
+    .supplier-worksheet tbody { display: block; }
+    .supplier-worksheet .supplier-capture-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: .5rem 0; border-bottom: 1px solid #e2e8f0; }
+    .supplier-worksheet .supplier-capture-row > td { min-width: 0; border: 0; padding: .375rem .75rem; }
+    .supplier-worksheet .supplier-capture-row > td:nth-child(3) { grid-column: span 2; }
+    .supplier-worksheet .supplier-capture-row > td:nth-child(4)::before { content: 'Cantidad'; }
+    .supplier-worksheet .supplier-capture-row > td:nth-child(5)::before { content: 'Precio unitario'; }
+    .supplier-worksheet .supplier-capture-row > td:nth-child(6)::before { content: 'Garantía'; }
+    .supplier-worksheet .supplier-capture-row > td:nth-child(7)::before { content: 'Entrega'; }
+    .supplier-worksheet .supplier-capture-row > td::before { display: block; margin-bottom: .25rem; font-size: .875rem; color: #475569; }
+    .supplier-worksheet tr:not(.supplier-capture-row), .supplier-worksheet td[colspan] { display: block; }
+}
+
+@layer base {
+    body {
+        background: #f8fafc;
+    }
+}
+
+@layer components {
+    .erp-page {
+        @apply min-h-screen bg-slate-50 px-4 py-5 font-sans text-slate-900 sm:px-6 lg:px-7;
+    }
+
+    .erp-shell {
+        @apply mx-auto w-full max-w-[1760px];
+    }
+
+    .erp-page-header {
+        @apply mb-7 border-b border-slate-200/70 pb-5;
+    }
+
+    .erp-kicker {
+        @apply text-[10px] font-black uppercase tracking-[0.22em] text-red-700;
+    }
+
+    .erp-title {
+        @apply mt-1 text-2xl font-black tracking-tight text-slate-950 md:text-[2rem];
+    }
+
+    .erp-subtitle {
+        @apply mt-1 max-w-3xl text-xs font-semibold leading-5 text-slate-500;
+    }
+
+    .erp-card {
+        @apply overflow-hidden rounded-xl border border-slate-200/70 bg-white/80 shadow-sm backdrop-blur;
+    }
+
+    .erp-card-header {
+        @apply border-b border-slate-200/70 bg-white/60 px-5 py-4;
+    }
+
+    .erp-open-panel {
+        @apply bg-transparent;
+    }
+
+    .erp-section {
+        @apply border-t border-slate-200/70 pt-5 first:border-t-0 first:pt-0;
+    }
+
+    .erp-section-header {
+        @apply mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between;
+    }
+
+    .erp-section-title {
+        @apply text-sm font-black tracking-tight text-slate-950;
+    }
+
+    .erp-section-help {
+        @apply mt-1 text-xs font-medium leading-5 text-slate-500;
+    }
+
+    .erp-chip {
+        @apply inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-600;
+    }
+
+    .erp-chip-dark {
+        @apply inline-flex items-center rounded-md bg-slate-950 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white;
+    }
+
+    .erp-chip-red {
+        @apply inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-red-700;
+    }
+
+    .erp-button-primary {
+        @apply inline-flex items-center justify-center rounded-lg bg-slate-950 px-4 py-2.5 text-xs font-black text-white transition hover:bg-black focus:outline-none focus:ring-2 focus:ring-slate-300;
+    }
+
+    .erp-button-danger {
+        @apply inline-flex items-center justify-center rounded-lg bg-red-700 px-4 py-2.5 text-xs font-black text-white transition hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-200;
+    }
+
+    .erp-button-secondary {
+        @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/70 px-4 py-2.5 text-xs font-black text-slate-700 transition hover:border-slate-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200;
+    }
+
+    .erp-table-wrap {
+        @apply overflow-hidden border-y border-slate-200/80 bg-white/60;
+    }
+
+    .erp-table {
+        @apply w-full text-left text-[11px];
+    }
+
+    .erp-table thead {
+        @apply border-b border-slate-200 bg-slate-50/90 text-[9px] font-black uppercase tracking-[0.16em] text-slate-500;
+    }
+
+    .erp-table tbody {
+        @apply divide-y divide-slate-100 bg-white;
+    }
+}

@@ -1,0 +1,205 @@
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { loginAs } from './helpers/auth';
+
+const adminEmail = process.env.E2E_ADMIN_EMAIL ?? 'admin@quantum.test';
+const supplierName = 'Proveedor E2E ACSIS';
+
+async function expectHealthy(page: Page): Promise<void> {
+  await expect(page.locator('body')).not.toContainText('Server Error');
+  await expect(page.locator('body')).not.toContainText('SQLSTATE');
+  await expect(page.locator('body')).not.toContainText('Internal Server Error');
+}
+
+async function attachStep(page: Page, testInfo: TestInfo, name: string): Promise<void> {
+  await expectHealthy(page);
+  await testInfo.attach(name, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+}
+
+async function waitForLivewire(page: Page): Promise<void> {
+  await page.waitForResponse((response) => response.url().includes('/livewire/update') && response.ok(), { timeout: 45_000 });
+}
+
+async function fillSupplierQuote(page: Page, unitCost: string, description: string, addAnother = false): Promise<void> {
+  await page.locator('select').filter({ hasText: supplierName }).first().selectOption({ label: supplierName });
+  await page.locator('input[wire\\:model\\.defer="supplierContactName"]').fill('Contacto Proveedor E2E');
+  await page.locator('input[wire\\:model\\.defer="supplierPaymentTerms"]').fill('Transferencia bancaria');
+  await page.locator('input[wire\\:model\\.defer="supplierWarranty"]').fill('90 dias');
+  await page.locator('input[wire\\:model\\.defer="supplierDeliveryTime"]').fill('15 dias');
+
+  await page.getByLabel('Descripcion cotizada').fill(description);
+  await page.getByLabel('Cantidad').fill('2');
+  await page.getByLabel('Precio proveedor').fill(unitCost);
+  await page.getByLabel('ETA fecha').fill('2026-06-15');
+  await page.getByLabel('Entrega', { exact: true }).fill('15 dias');
+  await page.getByLabel('Marca', { exact: true }).fill(description.includes('Alternativa') ? 'Aftermarket E2E' : 'VOLVO');
+  await page.getByLabel('Modelo').fill('E2E-MODEL-01');
+  await page.getByLabel('Garantia', { exact: true }).fill('90 dias');
+
+  await Promise.all([
+    waitForLivewire(page),
+    page.getByRole('button', { name: addAnother ? 'Guardar y agregar otra' : 'Guardar cotizacion' }).click(),
+  ]);
+  await expect(page.getByRole('heading', { name: 'Cotizaciones registradas' })).toBeVisible();
+  await expect(page.getByRole('row').filter({ hasText: 'PROVE-' }).first()).toBeVisible({ timeout: 15_000 });
+}
+
+test.describe('ERP full commercial workflow', () => {
+  test('creates a request and moves it through bid, offer, client approval and internal approval', async ({ page }, testInfo) => {
+    const unique = Date.now().toString();
+    const clientName = `Cliente E2E Flujo ${unique}`;
+    const partNumber = `E2E-PN-${unique}`;
+    const evidencePng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/l9v9VwAAAABJRU5ErkJggg==',
+      'base64'
+    );
+
+    await loginAs(page, adminEmail);
+
+    await page.goto('/sales/solicitud-cliente');
+    await page.locator('input[wire\\:model="quoteToName"]').fill(clientName);
+    await page.locator('input[wire\\:model="quoteToEmail"]').fill(`cliente.${unique}@quantum.test`);
+    await page.locator('input[wire\\:model="machinery"]').fill('Excavadora E2E');
+    await page.locator('input[wire\\:model="machineBrand"]').fill('VOLVO');
+    await page.locator('input[wire\\:model="machineModel"]').fill('EC220');
+    await page.locator('input[wire\\:model="equipmentSerial"]').fill(`SER-${unique}`);
+    await page.locator('input[wire\\:model="partName"]').fill('Filtro hidraulico E2E');
+    await page.locator('input[wire\\:model="partCode"]').fill(partNumber);
+    await page.locator('input[wire\\:model="partBrand"]').fill('VOLVO');
+    await page.locator('input[wire\\:model="partModel"]').fill('FH-220');
+    await page.locator('input[wire\\:model="requestQuantity"]').fill('2');
+    await page.locator('textarea[wire\\:model="description"]').fill('Solicitud E2E para validar el flujo comercial completo.');
+    const uploadResponse = page.waitForResponse((response) => response.url().includes('/livewire/upload-file') && response.ok(), { timeout: 30_000 });
+    const syncResponse = page.waitForResponse((response) => response.url().includes('/livewire/update') && response.ok(), { timeout: 30_000 });
+    await page.locator('input[type="file"]').setInputFiles({
+      name: `evidence-${unique}.png`,
+      mimeType: 'image/png',
+      buffer: evidencePng,
+    });
+    await uploadResponse;
+    await syncResponse;
+    await expect(page.getByText('The evidence attachment field is required.')).toHaveCount(0);
+    await attachStep(page, testInfo, '01-customer-request-filled');
+
+    await Promise.all([
+      page.waitForURL(/\/sales\/quotations\/manage\/request/, { timeout: 45_000 }),
+      page.getByRole('button', { name: 'Guardar solicitud' }).click(),
+    ]);
+    await expect(page.getByText(clientName)).toBeVisible({ timeout: 20_000 });
+    await attachStep(page, testInfo, '02-request-created');
+
+    await page.getByRole('button').filter({ hasText: clientName }).click();
+    await expect(page.getByText(partNumber)).toBeVisible();
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'A Licitacion ->' }).click(),
+    ]);
+    await expect(page.getByRole('heading', { name: 'Licitacion Proveedor' })).toBeVisible({ timeout: 20_000 });
+    await attachStep(page, testInfo, '03-sent-to-bid');
+
+    await page.locator('select').filter({ hasText: supplierName }).first().selectOption({ label: supplierName });
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Generar PDF RFQ' }).click(),
+    ]);
+    await expect(page.getByText('Ver PDF')).toBeVisible({ timeout: 30_000 });
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Marcar RFQ enviada' }).click(),
+    ]);
+    await attachStep(page, testInfo, '04-rfq-generated-and-sent');
+
+    await page.getByRole('button').filter({ hasText: 'Registrar respuesta' }).click();
+    await fillSupplierQuote(page, '299.98', 'Filtro hidraulico E2E original', true);
+    await fillSupplierQuote(page, '320.00', 'Filtro hidraulico E2E Alternativa');
+    await expect(page.getByText('2 respuestas guardadas')).toBeVisible({ timeout: 20_000 });
+    await attachStep(page, testInfo, '05-two-supplier-quotes');
+
+    await page.getByRole('button').filter({ hasText: 'Seleccionar partidas' }).click();
+    await expect(page.getByText('Filtro hidraulico E2E original')).toBeVisible();
+    await expect(page.getByText('Filtro hidraulico E2E Alternativa')).toBeVisible();
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Usar esta partida' }).first().click(),
+    ]);
+    await expect(page.getByText('Seleccionado:')).toBeVisible({ timeout: 20_000 });
+    await attachStep(page, testInfo, '06-bid-item-selected');
+
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Enviar seleccionados a Oferta Cliente' }).click(),
+    ]);
+    await expect(page.getByRole('heading', { name: 'Oferta Cliente' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Base costo proveedor')).toBeVisible();
+    await page.locator('input[wire\\:change^="updateClientPrice"]').fill('550');
+    await page.locator('input[wire\\:model\\.defer="clientOfferTaxPercent"]').fill('15');
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Guardar IVA' }).click(),
+    ]);
+    await page.locator('textarea[wire\\:model\\.defer="offerReviewNotes"]').fill('Oferta E2E lista para revision admin.');
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Enviar a revision admin' }).click(),
+    ]);
+    await expect(page.getByText('Pendiente de autorizacion admin')).toBeVisible({ timeout: 30_000 });
+
+    await page.goto('/admin/offer-reviews');
+    await expect(page.getByRole('button').filter({ hasText: clientName }).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button').filter({ hasText: clientName }).first().click();
+    await expect(page.getByRole('link', { name: 'Vista previa PDF' })).toBeVisible({ timeout: 20_000 });
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Autorizar envio al cliente' }).click(),
+    ]);
+    await expect(page.getByText('Oferta autorizada para enviar al cliente')).toBeVisible({ timeout: 20_000 });
+
+    await page.goto('/sales/quotations/manage/offer');
+    await expect(page.getByRole('button').filter({ hasText: clientName }).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button').filter({ hasText: clientName }).first().click();
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Generar PDF final' }).click(),
+    ]);
+    await expect(page.getByText('PDF final de oferta generado')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('button', { name: /Marcar enviada al cliente/ }).first()).toBeVisible({ timeout: 30_000 });
+    await attachStep(page, testInfo, '07-client-offer-generated');
+
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Marcar enviada al cliente' }).first().click(),
+    ]);
+    await expect(page.getByText('Oferta marcada como enviada al cliente')).toBeVisible({ timeout: 20_000 });
+    
+    await expect(page.getByRole('button', { name: 'Cliente aprobo todo' })).toBeVisible({ timeout: 20_000 });
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Cliente aprobo todo' }).click(),
+    ]);
+    await expect(page.getByRole('button', { name: 'Solicitar aprobacion interna' })).toBeVisible({ timeout: 20_000 });
+    await page.locator('textarea[wire\\:model\\.defer="approvalReason"]').fill('Cliente aprobo el total. Solicitud E2E de aprobacion interna.');
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Solicitar aprobacion interna' }).click(),
+    ]);
+    await expect(page.getByText('Ver aprobacion interna')).toBeVisible({ timeout: 20_000 });
+    await attachStep(page, testInfo, '08-internal-approval-requested');
+
+    await page.goto('/admin/approvals');
+    await expect(page.getByRole('button').filter({ hasText: clientName }).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button').filter({ hasText: clientName }).first().click();
+    await page.getByRole('button', { name: 'Productos' }).click();
+    await expect(page.getByText(partNumber)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Aprobar compra' })).toBeVisible();
+    await attachStep(page, testInfo, '09-admin-approval-detail');
+
+    await Promise.all([
+      waitForLivewire(page),
+      page.getByRole('button', { name: 'Aprobar compra' }).click(),
+    ]);
+    await expect(page.getByText('Solicitud procesada')).toBeVisible({ timeout: 30_000 });
+    await attachStep(page, testInfo, '10-admin-approved-generated-order');
+  });
+});

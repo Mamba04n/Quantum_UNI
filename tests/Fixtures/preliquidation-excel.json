@@ -1,0 +1,802 @@
+{
+    "air": {
+        "rows": [
+            {
+                "quoted_part_number": "332\/A2428",
+                "quoted_description": "SEAL DUST",
+                "quoted_quantity": 2,
+                "unit_cost": 3.46,
+                "weight_lb": 0.07,
+                "expected": {
+                    "cif": 3.67,
+                    "ddp": 4.8795031114952465,
+                    "price": 6.970718730707495,
+                    "total": 13.94143746141499
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2429",
+                "quoted_description": "PACKING",
+                "quoted_quantity": 2,
+                "unit_cost": 11.53,
+                "weight_lb": 0.11,
+                "expected": {
+                    "cif": 11.86,
+                    "ddp": 15.527576318063957,
+                    "price": 22.182251882948513,
+                    "total": 44.36450376589703
+                }
+            },
+            {
+                "quoted_part_number": "331\/67318",
+                "quoted_description": "O RING",
+                "quoted_quantity": 8,
+                "unit_cost": 1.15,
+                "weight_lb": 0.02,
+                "expected": {
+                    "cif": 1.21,
+                    "ddp": 1.602386603284356,
+                    "price": 2.289123718977651,
+                    "total": 18.31298975182121
+                }
+            },
+            {
+                "quoted_part_number": "331\/67263",
+                "quoted_description": "O RING",
+                "quoted_quantity": 2,
+                "unit_cost": 1.15,
+                "weight_lb": 0.02,
+                "expected": {
+                    "cif": 1.21,
+                    "ddp": 1.602386603284356,
+                    "price": 2.289123718977651,
+                    "total": 4.578247437955302
+                }
+            },
+            {
+                "quoted_part_number": "331\/67265",
+                "quoted_description": "O RING",
+                "quoted_quantity": 3,
+                "unit_cost": 1.15,
+                "weight_lb": 0.02,
+                "expected": {
+                    "cif": 1.21,
+                    "ddp": 1.602386603284356,
+                    "price": 2.289123718977651,
+                    "total": 6.867371156932954
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2343",
+                "quoted_description": "BUSH",
+                "quoted_quantity": 1,
+                "unit_cost": 181.07,
+                "weight_lb": 2.65,
+                "expected": {
+                    "cif": 189.01999999999998,
+                    "ddp": 249.33277493517716,
+                    "price": 356.18967847882453,
+                    "total": 356.18967847882453
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2435",
+                "quoted_description": "GAS SEAL",
+                "quoted_quantity": 1,
+                "unit_cost": 6.92,
+                "weight_lb": 0.11,
+                "expected": {
+                    "cif": 7.25,
+                    "ddp": 9.58067631806396,
+                    "price": 13.686680454377086,
+                    "total": 13.686680454377086
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2436",
+                "quoted_description": "STEP SEAL",
+                "quoted_quantity": 2,
+                "unit_cost": 12.69,
+                "weight_lb": 0.11,
+                "expected": {
+                    "cif": 13.02,
+                    "ddp": 17.02397631806396,
+                    "price": 24.3199661686628,
+                    "total": 48.6399323373256
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2437",
+                "quoted_description": "O RING",
+                "quoted_quantity": 3,
+                "unit_cost": 1.15,
+                "weight_lb": 0.04,
+                "expected": {
+                    "cif": 1.2699999999999998,
+                    "ddp": 1.7212732065687117,
+                    "price": 2.458961723669588,
+                    "total": 7.376885171008764
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "HM 380",
+                "quoted_quantity": 1,
+                "unit_cost": 153.39,
+                "weight_lb": 0.22,
+                "expected": {
+                    "cif": 154.04999999999998,
+                    "ddp": 199.18085263612787,
+                    "price": 284.5440751944684,
+                    "total": 284.5440751944684
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "HM 380",
+                "quoted_quantity": 1,
+                "unit_cost": 1.15,
+                "weight_lb": 0.22,
+                "expected": {
+                    "cif": 1.8099999999999998,
+                    "ddp": 2.7912526361279166,
+                    "price": 3.987503765897024,
+                    "total": 3.987503765897024
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "HM 380",
+                "quoted_quantity": 2,
+                "unit_cost": 1.15,
+                "weight_lb": 0.22,
+                "expected": {
+                    "cif": 1.8099999999999998,
+                    "ddp": 2.7912526361279166,
+                    "price": 3.987503765897024,
+                    "total": 7.975007531794048
+                }
+            },
+            {
+                "quoted_part_number": "332\/A3878",
+                "quoted_description": "HEAD BLOCK",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2445",
+                "quoted_description": "BUSH",
+                "quoted_quantity": 1,
+                "unit_cost": 78.43,
+                "weight_lb": 5.51,
+                "expected": {
+                    "cif": 94.96000000000001,
+                    "ddp": 133.9279592048401,
+                    "price": 191.32565600691444,
+                    "total": 191.32565600691444
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2446",
+                "quoted_description": "END COVER BUSH",
+                "quoted_quantity": 1,
+                "unit_cost": 64.59,
+                "weight_lb": 6.17,
+                "expected": {
+                    "cif": 83.1,
+                    "ddp": 119.99761711322384,
+                    "price": 171.4251673046055,
+                    "total": 171.4251673046055
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2447",
+                "quoted_description": "PIN",
+                "quoted_quantity": 2,
+                "unit_cost": 11.53,
+                "weight_lb": 3.97,
+                "expected": {
+                    "cif": 23.439999999999998,
+                    "ddp": 38.47269075194468,
+                    "price": 54.960986788492406,
+                    "total": 109.92197357698481
+                }
+            },
+            {
+                "quoted_part_number": "331\/67297",
+                "quoted_description": "RUBBER PIN PLUG",
+                "quoted_quantity": 3,
+                "unit_cost": 3.46,
+                "weight_lb": 0.07,
+                "expected": {
+                    "cif": 3.67,
+                    "ddp": 4.8795031114952465,
+                    "price": 6.970718730707495,
+                    "total": 20.912156192122485
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2282",
+                "quoted_description": "GREASE NIPPLE",
+                "quoted_quantity": 1,
+                "unit_cost": 1.15,
+                "weight_lb": 0.04,
+                "expected": {
+                    "cif": 1.2699999999999998,
+                    "ddp": 1.7212732065687117,
+                    "price": 2.458961723669588,
+                    "total": 2.458961723669588
+                }
+            },
+            {
+                "quoted_part_number": "332\/A3879",
+                "quoted_description": "TOOL RETAINER PIN",
+                "quoted_quantity": 2,
+                "unit_cost": 72.66,
+                "weight_lb": 12.13,
+                "expected": {
+                    "cif": 109.04999999999998,
+                    "ddp": 165.83612489196193,
+                    "price": 236.9087498456599,
+                    "total": 473.8174996913198
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2451",
+                "quoted_description": "AIR PLUG",
+                "quoted_quantity": 1,
+                "unit_cost": 14.99,
+                "weight_lb": 0.88,
+                "expected": {
+                    "cif": 17.63,
+                    "ddp": 24.56811054451167,
+                    "price": 35.09730077787381,
+                    "total": 35.09730077787381
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2455",
+                "quoted_description": "MOIL TOOL",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67315",
+                "quoted_description": "GAS VALVE KIT",
+                "quoted_quantity": 2,
+                "unit_cost": 8.07,
+                "weight_lb": 0.88,
+                "expected": {
+                    "cif": 10.71,
+                    "ddp": 15.64131054451167,
+                    "price": 22.344729349302387,
+                    "total": 44.689458698604774
+                }
+            },
+            {
+                "quoted_part_number": "331\/67320",
+                "quoted_description": "O RING",
+                "quoted_quantity": 2,
+                "unit_cost": 65.74,
+                "weight_lb": 0.02,
+                "expected": {
+                    "cif": 65.8,
+                    "ddp": 84.92348660328437,
+                    "price": 121.31926657612054,
+                    "total": 242.63853315224108
+                }
+            },
+            {
+                "quoted_part_number": "332\/C7817",
+                "quoted_description": "DIAPHRAGM",
+                "quoted_quantity": 2,
+                "unit_cost": 1.15,
+                "weight_lb": 0.11,
+                "expected": {
+                    "cif": 1.48,
+                    "ddp": 2.137376318063959,
+                    "price": 3.05339474009137,
+                    "total": 6.10678948018274
+                }
+            },
+            {
+                "quoted_part_number": "332\/F3560",
+                "quoted_description": "O RING",
+                "quoted_quantity": 1,
+                "unit_cost": 1.15,
+                "weight_lb": 0.02,
+                "expected": {
+                    "cif": 1.21,
+                    "ddp": 1.602386603284356,
+                    "price": 2.289123718977651,
+                    "total": 2.289123718977651
+                }
+            },
+            {
+                "quoted_part_number": "332\/G0278",
+                "quoted_description": "BACK-UP RING",
+                "quoted_quantity": 1,
+                "unit_cost": 1.15,
+                "weight_lb": 0.04,
+                "expected": {
+                    "cif": 1.2699999999999998,
+                    "ddp": 1.7212732065687117,
+                    "price": 2.458961723669588,
+                    "total": 2.458961723669588
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2467",
+                "quoted_description": "WASHER",
+                "quoted_quantity": 4,
+                "unit_cost": 5.77,
+                "weight_lb": 0.11,
+                "expected": {
+                    "cif": 6.1,
+                    "ddp": 8.097176318063958,
+                    "price": 11.56739474009137,
+                    "total": 46.26957896036548
+                }
+            },
+            {
+                "quoted_part_number": "332\/D0135",
+                "quoted_description": "BOLT",
+                "quoted_quantity": 4,
+                "unit_cost": 3.46,
+                "weight_lb": 0.44,
+                "expected": {
+                    "cif": 4.779999999999999,
+                    "ddp": 7.078905272255833,
+                    "price": 10.112721817508334,
+                    "total": 40.450887270033334
+                }
+            },
+            {
+                "quoted_part_number": "331\/67362",
+                "quoted_description": "BOLT",
+                "quoted_quantity": 4,
+                "unit_cost": 51.9,
+                "weight_lb": 0.55,
+                "expected": {
+                    "cif": 53.55,
+                    "ddp": 70.22038159031978,
+                    "price": 100.31483084331397,
+                    "total": 401.2593233732559
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "COMPLETE SEAL KIT",
+                "quoted_quantity": 1,
+                "unit_cost": 62.23,
+                "weight_lb": 1.76,
+                "expected": {
+                    "cif": 67.50999999999999,
+                    "ddp": 90.73872108902333,
+                    "price": 129.62674441289047,
+                    "total": 129.62674441289047
+                }
+            }
+        ],
+        "expected": {
+            "exw": 1215.48,
+            "weight": 57.85,
+            "ddp": 1911.8486999999998,
+            "sales": 2731.2124285714285
+        }
+    },
+    "sea": {
+        "rows": [
+            {
+                "quoted_part_number": "332\/A2428",
+                "quoted_description": "SEAL DUST",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2429",
+                "quoted_description": "PACKING",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67318",
+                "quoted_description": "O RING",
+                "quoted_quantity": 8,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67263",
+                "quoted_description": "O RING",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67265",
+                "quoted_description": "O RING",
+                "quoted_quantity": 3,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2343",
+                "quoted_description": "BUSH",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2435",
+                "quoted_description": "GAS SEAL",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2436",
+                "quoted_description": "STEP SEAL",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2437",
+                "quoted_description": "O RING",
+                "quoted_quantity": 3,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "HM 380",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "HM 380",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "HM 380",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A3878",
+                "quoted_description": "HEAD BLOCK",
+                "quoted_quantity": 1,
+                "unit_cost": 1036.84,
+                "weight_lb": 121.25,
+                "expected": {
+                    "cif": 1158.09,
+                    "ddp": 1564.9013246012778,
+                    "price": 2235.5733208589686,
+                    "total": 2235.5733208589686
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2445",
+                "quoted_description": "BUSH",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2446",
+                "quoted_description": "END COVER BUSH",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2447",
+                "quoted_description": "PIN",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67297",
+                "quoted_description": "RUBBER PIN PLUG",
+                "quoted_quantity": 3,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2282",
+                "quoted_description": "GREASE NIPPLE",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A3879",
+                "quoted_description": "TOOL RETAINER PIN",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2451",
+                "quoted_description": "AIR PLUG",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2455",
+                "quoted_description": "MOIL TOOL",
+                "quoted_quantity": 1,
+                "unit_cost": 155.7,
+                "weight_lb": 83.78,
+                "expected": {
+                    "cif": 239.48,
+                    "ddp": 357.9639753987221,
+                    "price": 511.37710771246014,
+                    "total": 511.37710771246014
+                }
+            },
+            {
+                "quoted_part_number": "331\/67315",
+                "quoted_description": "GAS VALVE KIT",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67320",
+                "quoted_description": "O RING",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/C7817",
+                "quoted_description": "DIAPHRAGM",
+                "quoted_quantity": 2,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/F3560",
+                "quoted_description": "O RING",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/G0278",
+                "quoted_description": "BACK-UP RING",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/A2467",
+                "quoted_description": "WASHER",
+                "quoted_quantity": 4,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "332\/D0135",
+                "quoted_description": "BOLT",
+                "quoted_quantity": 4,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "331\/67362",
+                "quoted_description": "BOLT",
+                "quoted_quantity": 4,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            },
+            {
+                "quoted_part_number": "JCB HM380",
+                "quoted_description": "COMPLETE SEAL KIT",
+                "quoted_quantity": 1,
+                "unit_cost": 0,
+                "weight_lb": 0,
+                "expected": {
+                    "cif": 0,
+                    "ddp": 0,
+                    "price": 0,
+                    "total": 0
+                }
+            }
+        ],
+        "expected": {
+            "exw": 1192.54,
+            "weight": 205.03,
+            "ddp": 1922.8653,
+            "sales": 2746.950428571429
+        }
+    }
+}

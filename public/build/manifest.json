@@ -1,0 +1,41 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-BiztQDuP.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/storefront-experience.css": {
+    "file": "assets/storefront-experience-DeLjzidO.css",
+    "name": "storefront-experience",
+    "names": [
+      "storefront-experience.css"
+    ],
+    "src": "resources/css/storefront-experience.css",
+    "isEntry": true
+  },
+  "resources/css/storefront-public.css": {
+    "file": "assets/storefront-public-BuAyEp8Q.css",
+    "name": "storefront-public",
+    "names": [
+      "storefront-public.css"
+    ],
+    "src": "resources/css/storefront-public.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-Cba6N_Ge.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/storefront-experience.js": {
+    "file": "assets/storefront-experience-orJB0GLo.js",
+    "name": "storefront-experience",
+    "src": "resources/js/storefront-experience.js",
+    "isEntry": true
+  }
+}

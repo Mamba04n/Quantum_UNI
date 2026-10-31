@@ -1,0 +1,22 @@
+<?php
+require __DIR__.'/../../../vendor/autoload.php';
+$app=require __DIR__.'/../../../bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+if(!app()->environment('testing') || config('database.connections.mysql.database')!=='erp_crm_testing' || !in_array(config('database.connections.mysql.host'),['127.0.0.1','localhost'],true)) throw new RuntimeException('Test-only fixture.');
+Illuminate\Support\Facades\Http::preventStrayRequests();
+$user=App\Models\User::firstOrCreate(['email'=>'ux-paypal@quantum.test'],['name'=>'Revisión cobros','password'=>Illuminate\Support\Facades\Hash::make('local-ux-review'),'is_active'=>true,'email_verified_at'=>now()]);
+$role=App\Models\Role::firstOrCreate(['slug'=>'admin'],['name'=>'Admin']); $user->roles()->syncWithoutDetaching([$role->id]);
+Illuminate\Support\Facades\Auth::setUser($user);
+app(App\Services\ExchangeRateService::class)->approveManualRate('USD','NIO','36.500000',now()->toDateString(),$user);
+$customer=App\Models\Entity::firstOrCreate(['name'=>'UX-PAYPAL Cliente de prueba'],['type'=>'cliente']);
+$product=App\Models\Product::firstOrCreate(['description'=>'Filtro de aceite de prueba'],['name'=>'Filtro de aceite','part_number'=>'UX-PAYPAL-FILTRO','type'=>'pieza','sales_price'=>'365.00','active'=>true,'stock_on_hand'=>5]);
+$product->update(['part_number'=>'UX-PAYPAL-FILTRO']);
+$order=App\Models\SaleOrder::withoutEvents(fn()=>App\Models\SaleOrder::firstOrCreate(['reference'=>'UX-PAYPAL-ORDER'],['customer_id'=>$customer->id,'client_name'=>$customer->name,'date'=>now(),'status'=>'confirmed','currency'=>'USD','subtotal'=>'25.00','tax_amount'=>0,'total_amount'=>'25.00']));
+$orderItem=$order->items()->firstOrCreate(['product_id'=>$product->id],['description'=>'Filtro de prueba','quantity'=>2,'unit_price'=>'10.00','total_price'=>'20.00']);
+$status=App\Models\OrderStatus::withoutEvents(fn()=>App\Models\OrderStatus::firstOrCreate(['sale_order_id'=>$order->id],['customer_id'=>$customer->id]));
+$status->items()->firstOrCreate(['sale_order_item_id'=>$orderItem->id],['product_id'=>$product->id,'part_name'=>'Filtro','part_number'=>'UX-PAYPAL-FILTRO','quantity_ordered'=>2,'quantity_kardex_entry'=>2]);
+$link=App\Models\PaymentLink::where('description','UX-PAYPAL Cobro de prueba')->first();
+if(!$link) $link=app(App\Domain\Finanzas\PaymentLinks\PaymentLinkService::class)->create($user,['issuance_key'=>(string)Illuminate\Support\Str::uuid(),'customer_id'=>$customer->id,'sale_order_id'=>$order->id,'description'=>'UX-PAYPAL Cobro de prueba','expires_at'=>now()->addHours(72)->toDateTimeString(),'items'=>[['product_id'=>$product->id,'quantity'=>2,'unit_price'=>'10.00'],['product_id'=>null,'description'=>'Flete de prueba','quantity'=>1,'unit_price'=>'5.00']]]);
+$tracker=app(App\Domain\Pedidos\Tracking\Services\PublicTrackingService::class)->generate($user,$order,now()->addDay()->toDateString());
+file_put_contents(__DIR__.'/../../../storage/app/public-commerce-e2e.json',json_encode(['payment_token'=>$link->public_token,'tracking_code'=>$tracker->public_tracking_code,'order_id'=>$order->id,'code'=>$link->code]));
+echo 'TEST_FIXTURE_READY'.PHP_EOL;

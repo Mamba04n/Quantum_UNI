@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-label="Imagen de producto">
+  <rect width="900" height="600" fill="#f3f4f6"/>
+  <rect x="140" y="120" width="620" height="360" rx="32" fill="#ffffff" stroke="#d1d5db" stroke-width="8"/>
+  <path d="M270 390l120-130 95 92 58-64 110 102H270z" fill="#e5e7eb"/>
+  <circle cx="600" cy="220" r="48" fill="#d1d5db"/>
+  <text x="450" y="535" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#6b7280">Quantum Soluciones</text>
+</svg>

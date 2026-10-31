@@ -1,0 +1,26 @@
+/.env
+/.env.*
+!/.env.example
+!/.env.testing.example
+/auth.json
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/bootstrap/cache/*.php
+/storage/**/*.log
+/storage/app/private/*
+/storage/app/public/*
+!/storage/app/public/.gitignore
+!/storage/app/public/.htaccess
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/.phpunit.result.cache
+/.phpunit.cache/
+/test-results/
+/playwright-report/
+__pycache__/
+*.pyc
+/outputs/
+# public/build se conserva para ejecutar el ZIP sin recompilar el frontend.

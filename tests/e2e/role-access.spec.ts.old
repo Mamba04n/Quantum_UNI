@@ -1,0 +1,79 @@
+import { expect, test, type Page } from '@playwright/test';
+import { loginAs } from './helpers/auth';
+
+type AccessCase = {
+  email: string;
+  allowed: Array<[string, string]>;
+  forbidden: string[];
+};
+
+const cases: AccessCase[] = [
+  {
+    email: 'ventas@quantum.test',
+    allowed: [
+      ['/dashboard', 'dashboard-ventas'],
+      ['/sales/solicitud-cliente', 'solicitud-cliente'],
+      ['/sales/quotations/manage/request', 'gestor-comercial'],
+    ],
+    forbidden: ['/finance/cxp', '/admin/users', '/admin/approvals'],
+  },
+  {
+    email: 'compras@quantum.test',
+    allowed: [
+      ['/dashboard', 'dashboard-compras'],
+      ['/admin/proveedores', 'proveedores'],
+      ['/admin/approvals', 'aprobaciones'],
+    ],
+    forbidden: ['/finance/cxp', '/admin/users', '/sales/solicitud-cliente'],
+  },
+  {
+    email: 'finanzas@quantum.test',
+    allowed: [
+      ['/dashboard', 'dashboard-finanzas'],
+      ['/finance/cxp', 'cxp'],
+      ['/finance/cxc', 'cxc'],
+      ['/finance/invoices', 'facturas'],
+    ],
+    forbidden: ['/admin/users', '/admin/proveedores', '/sales/solicitud-cliente'],
+  },
+  {
+    email: 'bodega@quantum.test',
+    allowed: [
+      ['/dashboard', 'dashboard-bodega'],
+      ['/inventory/products', 'productos'],
+      ['/warehouse/incoming-orders', 'ordenes-entrantes'],
+    ],
+    forbidden: ['/finance/cxp', '/admin/users', '/admin/approvals', '/sales/solicitud-cliente'],
+  },
+];
+
+async function expectHealthy(page: Page): Promise<void> {
+  await expect(page.locator('body')).not.toContainText('Server Error');
+  await expect(page.locator('body')).not.toContainText('SQLSTATE');
+  await expect(page.locator('body')).not.toContainText('Internal Server Error');
+}
+
+test.describe('ERP role access and restrictions', () => {
+  for (const accessCase of cases) {
+    test(`${accessCase.email} sees only permitted module views`, async ({ page }, testInfo) => {
+      await loginAs(page, accessCase.email);
+
+      for (const [url, name] of accessCase.allowed) {
+        const response = await page.goto(url);
+        await page.waitForLoadState('networkidle');
+        expect(response?.status(), `${accessCase.email} should open ${url}`).toBeLessThan(400);
+        await expectHealthy(page);
+        await testInfo.attach(`${accessCase.email}-${name}`, {
+          body: await page.screenshot({ fullPage: true }),
+          contentType: 'image/png',
+        });
+      }
+
+      for (const url of accessCase.forbidden) {
+        const response = await page.goto(url);
+        expect(response?.status(), `${accessCase.email} should be blocked from ${url}`).toBe(403);
+        await expect(page.locator('body')).toContainText(/403|Forbidden|Unauthorized|No autorizado/i);
+      }
+    });
+  }
+});

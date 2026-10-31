@@ -1,0 +1,3 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="csrf-token" content="{{ csrf_token() }}"><title>@yield('title') · Quantum Soluciones</title><link rel="stylesheet" href="{{ asset('css/public-commerce.css') }}?v={{ filemtime(public_path('css/public-commerce.css')) }}"></head>
+<body><header><a href="{{ url('/') }}" class="brand"><img src="{{ asset('favicon.png') }}" alt=""><span>Quantum Soluciones</span></a></header><main>@yield('content')</main><footer>Quantum Soluciones · <a href="{{ url('/contacto') }}">Contacto y ayuda</a></footer>@yield('scripts')</body></html>

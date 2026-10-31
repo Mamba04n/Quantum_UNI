@@ -1,0 +1,12 @@
+<dialog id="storefront-cookie-dialog" class="storefront-cookie-dialog" aria-labelledby="cookie-dialog-title" aria-describedby="cookie-dialog-description" data-cookie-dialog data-policy-page="{{ request()->routeIs('storefront.legal.*') ? 'true' : 'false' }}">
+    <div class="cookie-dialog-brand"><img src="{{ asset('storefront/images/logo.webp') }}" width="30" height="30" alt=""><span>Quantum Soluciones</span><button type="button" data-cookie-close aria-label="Cerrar preferencias" hidden>×</button></div>
+    <span class="cookie-dialog-kicker">Tu privacidad, tus preferencias</span>
+    <h2 id="cookie-dialog-title">Elige cómo quieres navegar.</h2>
+    <p id="cookie-dialog-description">Usamos almacenamiento necesario para mantener tu sesión, proteger los formularios y conservar el carrito. Los mapas externos solo se cargan si los autorizas.</p>
+    <div class="cookie-dialog-essential"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m12 3 8 4v6c0 4-8 8-8 8s-8-4-8-8V7l8-4Z"/><path d="m8 12 3 3 5-6"/></svg><div><strong>Necesarias para el sitio</strong><p>Sesión, seguridad, carrito y tu elección de privacidad.</p></div><span>Siempre activas</span></div>
+    <details class="cookie-dialog-settings" data-cookie-settings><summary>Configurar preferencias</summary><label><span><strong>Mapas y servicios externos</strong><small>Permite cargar Google Maps. El proveedor recibe datos de conexión y aplica su propia política.</small></span><input type="checkbox" data-cookie-external></label><p>No utilizamos aquí categorías de publicidad o analítica que no estén implementadas.</p><button type="button" data-cookie-save>Guardar mi elección</button></details>
+    <div class="cookie-dialog-actions"><button type="button" data-cookie-necessary>Solo necesarias</button><button type="button" data-cookie-accept>Permitir también mapas</button></div>
+    <p class="cookie-dialog-footer">Puedes cambiar tu elección en “Preferencias de cookies”, al pie de la página. <a href="{{ route('storefront.legal.cookies') }}">Política de cookies</a> · <a href="{{ route('storefront.legal.privacy') }}">Privacidad</a></p>
+</dialog>
+@if(request()->routeIs('login', 'register'))<button type="button" class="auth-cookie-preferences" data-cookie-open>Preferencias de cookies</button>@endif
+<noscript><div class="cookie-noscript">Sin JavaScript, los mapas externos permanecen desactivados. Consulta nuestra <a href="{{ route('storefront.legal.cookies') }}">política de cookies</a>.</div></noscript>

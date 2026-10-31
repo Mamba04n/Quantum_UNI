@@ -1,0 +1,8 @@
+<details class="home-machine-credits"><summary>Créditos de fotografías</summary>
+    <p>Fotografías de referencia de maquinaria; versiones reducidas y convertidas a WebP, con encuadre adaptado a cada pantalla.</p>
+    <ul>
+        <li>Tarjetas: <a href="https://commons.wikimedia.org/wiki/File:Volvo_EC210BLC.jpg">Volvo — Tiia Monto</a> y <a href="https://commons.wikimedia.org/wiki/File:KOMATSU_EXCAVATOR_PC200-10.jpg">Komatsu — Dinkun Chen</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:CAT_320.excavator.jpg">Caterpillar — Justin Smith</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.</li>
+        <li>Hero: <a href="https://commons.wikimedia.org/wiki/File:Volvo_EC_210B_LC_(8760608246).jpg">Volvo — order_242</a>, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>; <a href="https://commons.wikimedia.org/wiki/File:KOMATSU_EXCAVATOR_AVANCE_PC200_(2).jpg">Komatsu — Dinkun Chen</a> y <a href="https://commons.wikimedia.org/wiki/File:Caterpillar_320.jpg">Caterpillar — Bene Riobó</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</li>
+        <li>Anuncios: <a href="https://commons.wikimedia.org/wiki/File:Volvo_EC210B.JPG">Volvo — Ghostrider</a>, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Komatsu_PC200_excavator_(34970228724).jpg">Komatsu — Bob Adams</a>, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>; <a href="https://commons.wikimedia.org/wiki/File:CAT320-001.jpg">Caterpillar — NJR ZA</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.</li>
+    </ul>
+</details>

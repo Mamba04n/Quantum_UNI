@@ -1,0 +1,4 @@
+<section class="quantum-campaigns container" aria-label="Descubre m&aacute;s en Quantum">
+<article class="quantum-campaign quantum-campaign--catalogs"><img src="{{ asset('storefront/images/modules/catalogs-manuals.webp') }}" alt="Consulta de documentos t&eacute;cnicos" loading="lazy" width="320" height="220"><div><span>Cat&aacute;logos t&eacute;cnicos</span><h2>Encuentra la referencia que necesitas.</h2><p>Consulta fichas y documentos para preparar tu pr&oacute;xima solicitud.</p><a href="{{ route('storefront.catalogs.index') }}">Explorar cat&aacute;logos <span aria-hidden="true">&rarr;</span></a></div></article>
+<article class="quantum-campaign quantum-campaign--account"><div><span>Tu cuenta Quantum</span><h2>Tus pedidos y soporte, en un mismo lugar.</h2><p>Entra al portal de cliente para consultar tu informaci&oacute;n.</p><a href="{{ route('customer.portal') }}">Acceder a mi cuenta <span aria-hidden="true">&rarr;</span></a></div></article>
+</section>

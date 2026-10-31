@@ -1,0 +1,14 @@
+<section class="home-faq" aria-labelledby="home-faq-title">
+    <div class="container">
+        <header class="home-faq-heading"><span>Antes de cotizar</span><h2 id="home-faq-title">Preguntas frecuentes</h2><p>Lo que necesitas saber para encontrar tu pieza y preparar tu solicitud.</p></header>
+        <div class="home-faq-list">
+            <details name="quantum-home-faq"><summary>¿Qué datos necesito para cotizar un repuesto?</summary><div><p>Comparte el número de parte, la marca y el modelo de la máquina. Una foto de la pieza o de la placa del equipo también nos ayuda a identificar la referencia y revisar su aplicación.</p><a href="{{ route('storefront.contact') }}">Enviar mi requerimiento <span aria-hidden="true">→</span></a></div></details>
+            <details name="quantum-home-faq"><summary>¿Puedo consultar si no tengo el número de parte?</summary><div><p>Sí. Envíanos una fotografía y los datos que tengas del equipo. Nuestro equipo técnico revisará la información y te indicará si necesita medidas, número de serie u otros detalles para identificar la pieza.</p></div></details>
+            <details name="quantum-home-faq"><summary>¿Cómo confirmo que la pieza es compatible con mi maquinaria?</summary><div><p>Revisamos la referencia y los datos de tu equipo antes de recomendar una pieza. La coincidencia de marca o de apariencia por sí sola no confirma compatibilidad; comparte el modelo y la aplicación para validar tu requerimiento.</p></div></details>
+            <details name="quantum-home-faq"><summary>¿Cómo se confirman el precio, la disponibilidad y la entrega?</summary><div><p>Confirmamos estos datos en la cotización. Los precios publicados son referenciales y están sujetos a confirmación; las condiciones y el plazo de entrega se coordinan según la pieza y la disponibilidad.</p></div></details>
+            <details name="quantum-home-faq"><summary>¿Puedo solicitar una cotización desde mi cuenta?</summary><div><p>Sí. Agrega las piezas al carrito y entra con tu cuenta para continuar la solicitud. Si aún no tienes una cuenta, puedes registrarte como cliente. Enviar la solicitud de cotización no realiza un cobro.</p><a href="{{ route('customer.quote') }}">Cotizar con mi cuenta <span aria-hidden="true">→</span></a></div></details>
+            <details name="quantum-home-faq"><summary>¿Dónde está ubicado Quantum Soluciones?</summary><div><p>Estamos en Colonia Centro América, Managua. Consulta nuestra ubicación o comunícate con nosotros para coordinar tu visita y compartir tu requerimiento.</p><a href="{{ route('storefront.contact') }}">Ver ubicación y contacto <span aria-hidden="true">→</span></a></div></details>
+        </div>
+        <p class="home-faq-help">¿Tu consulta es diferente? <a href="{{ route('storefront.contact') }}">Habla con nuestro equipo <span aria-hidden="true">→</span></a></p>
+    </div>
+</section>

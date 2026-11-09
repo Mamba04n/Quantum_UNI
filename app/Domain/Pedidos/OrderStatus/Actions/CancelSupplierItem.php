@@ -31,7 +31,8 @@ class CancelSupplierItem
             'cancellation_reason' => $reason,
         ])->save();
 
-        $item->loadMissing('orderStatus');
+        $item->loadMissing(['orderStatus', 'supplier']);
+        $supplierText = $item->supplier?->name ? "Proveedor [{$item->supplier->name}]" : "Proveedor";
 
         $this->activity->record(
             $item->orderStatus,
@@ -40,7 +41,7 @@ class CancelSupplierItem
             OrderStatusService::PHASE_PURCHASE,
             $oldStatus,
             OrderStatusService::STATUS_CANCELLED_SUPPLIER,
-            "Proveedor cancelo partida: {$reason}",
+            "{$supplierText} canceló partida: {$reason}",
             $user
         );
 

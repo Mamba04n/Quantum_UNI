@@ -1,91 +1,93 @@
 @php
-    $topNav = app(\App\Support\WorkspaceNavigation::class);
-    $allUserAreas = $topNav->areas(auth()->user());
-    $activeAreaKey = $topNav->current($allUserAreas, request()->route()?->getName());
+    $user = auth()->user();
+    $userInitials = mb_strtoupper(mb_substr(trim($user->name ?? 'U'), 0, 2, 'UTF-8'), 'UTF-8');
+    $firstName = str($user->name ?? 'Usuario')->before(' ');
 @endphp
-<header class="relative z-50 flex shrink-0 flex-col border-b border-slate-200 bg-white shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-8 border-b border-gray-100 lg:grid lg:grid-cols-[1fr_auto_1fr]">
-        <div class="flex min-w-0 basis-full items-center gap-1.5 sm:basis-0 sm:flex-1 sm:gap-3 lg:contents">
-            <div class="flex shrink-0 items-center">
-                <a href="{{ route('workspace') }}" aria-label="QuantumComplete" class="flex shrink-0 items-center transition-opacity hover:opacity-80">
-                    <img src="{{ asset('storefront/images/logo.png') }}" alt="QuantumComplete" class="h-8 w-auto object-contain">
-                </a>
-            </div>
-            <!-- Áreas principales arriba -->
-            <div class="mx-auto flex items-center justify-center gap-1">
-            <nav aria-label="Áreas de trabajo" class="hidden items-center justify-center gap-1 lg:flex">
-                @foreach(['ventas' => 'Ventas', 'bodega' => 'Bodega', 'finanzas' => 'Finanzas'] as $key => $label)
-                    @continue(!isset($allUserAreas[$key]))
-                    @php
-                        $isAreaActive = ($activeAreaKey === $key);
-                    @endphp
-                    <a href="{{ route('workspace', $key) }}"
-                       @if($isAreaActive) aria-current="page" @endif
-                       class="inline-flex max-w-full items-center justify-center rounded-xl px-2.5 py-1.5 text-center text-sm transition-colors {{ $isAreaActive ? 'bg-[#6f1220] font-semibold text-white shadow-sm' : 'font-medium text-slate-600 hover:bg-rose-50 hover:text-[#6f1220]' }}">
-                        {{ $label }}
-                    </a>
-                @endforeach
-            </nav>
 
-            @include('livewire.layout.areas-menu')
-            </div>
+<header class="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-[#e8e8e9] bg-white px-4 sm:px-6 backdrop-blur transition-all">
+    {{-- Izquierda: Botón Menú Hamburguesa (colapsar/expandir en escritorio o abrir en móvil tipo CMMS) --}}
+    <div class="flex items-center gap-3 shrink-0">
+        <button
+            type="button"
+            class="p-2 sm:p-2.5 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none"
+            @click="mobile ? openMenu() : toggleSidebar()"
+            :aria-expanded="mobile ? menuOpen : !collapsed"
+            aria-label="Colapsar o expandir menú"
+            :title="mobile ? 'Abrir menú' : (collapsed ? 'Expandir barra lateral' : 'Contraer barra lateral')"
+        >
+            <x-portal.icon name="menu" class="w-6 h-6 text-gray-700" />
+        </button>
+    </div>
 
-            @unless(request()->routeIs('workspace') && request()->route('area'))
-            <a href="{{ route('explorer.index', $activeAreaKey ? ['area' => $activeAreaKey] : []) }}" aria-label="Buscar en el ERP" class="shrink-0 rounded-lg p-2 text-slate-600 hover:bg-gray-50 md:hidden ml-auto">
-                <x-workspace-icon name="search"/>
-            </a>
-            @endunless
+    {{-- Centro: Buscador del ERP estilo Portal de Clientes --}}
+    <div class="flex items-center justify-center flex-1 max-w-lg mx-3 sm:mx-6">
+        <div class="w-full">
+            @livewire('explorador.explorer-quick-search')
         </div>
+    </div>
 
-        <div class="ml-auto flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 sm:border-l sm:border-slate-200 sm:pl-3">
+    {{-- Derecha: Notificaciones, Tickets, Chat interno y Menú de usuario estilo Portal --}}
+    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
         <livewire:layout.erp-notifications />
 
-        <!-- Messenger Dropdown -->
         @if(!request()->routeIs('customer.portal', 'customer.tickets'))
             @livewire('admin.internal-chat-dropdown')
         @endif
 
-        <!-- Menu de usuario -->
-        <div class="ms-3 relative">
-            <x-dropdown align="right" width="48">
+        {{-- Dropdown de Cuenta de Usuario estilo Portal de Clientes --}}
+        <div class="relative ms-1">
+            <x-dropdown align="right" width="56">
                 <x-slot name="trigger">
-                    <button type="button" data-testid="user-menu-trigger" class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3 py-2 text-sm font-semibold leading-4 text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none">
-                        <span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-xs font-semibold text-[#6f1220]">{{ mb_strtoupper(mb_substr(auth()->user()->name ?? 'U', 0, 1)) }}</span><div class="max-w-24 truncate sm:max-w-48" x-data="{{ json_encode(['name' => auth()->user()->name ?? 'Usuario']) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name">{{ auth()->user()->name ?? 'Usuario' }}</div>
-
-                        <div class="ms-1">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
+                    <button
+                        type="button"
+                        data-testid="user-menu-trigger"
+                        class="inline-flex items-center gap-2.5 rounded-full border border-gray-200 bg-white py-1.5 pl-1.5 pr-3 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#b50e0e]/20"
+                    >
+                        <span aria-hidden="true" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-50 text-xs font-bold text-[#b50e0e]">
+                            {{ $userInitials }}
+                        </span>
+                        <span class="max-w-28 truncate sm:max-w-40 text-xs font-semibold text-gray-800" x-data="{{ json_encode(['name' => $firstName]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name">
+                            {{ $firstName }}
+                        </span>
+                        <x-portal.icon name="chevron-down" class="w-3.5 h-3.5 text-gray-400" />
                     </button>
                 </x-slot>
 
                 <x-slot name="content">
+                    <div class="px-4 py-3 border-b border-gray-100">
+                        <p class="text-xs font-semibold text-gray-900 truncate">{{ $user->name ?? 'Usuario' }}</p>
+                        <p class="text-[11px] text-gray-500 truncate">{{ $user->email ?? '' }}</p>
+                    </div>
+
                     @can('full_access')
                     <x-dropdown-link :href="route('profile')">
-                        Perfil
+                        Mi Perfil
                     </x-dropdown-link>
                     @endcan
-                    <x-dropdown-link :href="url('/')" target="_blank" rel="noopener">Ver tienda online</x-dropdown-link>
 
-                    <!-- Cierre de sesion -->
+                    <x-dropdown-link :href="route('customer.portal')" target="_blank" rel="noopener">
+                        Ir al Portal de Clientes
+                    </x-dropdown-link>
+
+                    <x-dropdown-link :href="url('/')" target="_blank" rel="noopener">
+                        Ver Tienda Online
+                    </x-dropdown-link>
+
+                    <div class="border-t border-gray-100 my-1"></div>
+
+                    <!-- Cierre de sesión -->
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" data-testid="logout-submit" class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
-                            Cerrar sesion
+                        <button
+                            type="submit"
+                            data-testid="logout-submit"
+                            class="block w-full px-4 py-2 text-start text-xs font-semibold text-rose-700 hover:bg-rose-50 focus:outline-none transition-colors"
+                        >
+                            Cerrar sesión
                         </button>
                     </form>
                 </x-slot>
             </x-dropdown>
         </div>
     </div>
-    </div>
-    @unless(request()->routeIs('workspace') && request()->route('area'))
-    <div class="flex min-w-0 flex-col gap-2 bg-slate-50/80 px-4 py-2 sm:px-8 md:flex-row md:items-center md:gap-4">
-        @include('livewire.layout.area-modules-navigation')
-        <div class="hidden w-full shrink-0 md:block md:ml-auto md:w-80 lg:w-96 [&>div]:w-full">
-            @livewire('explorador.explorer-quick-search', ['area' => $activeAreaKey])
-        </div>
-    </div>
-    @endunless
 </header>

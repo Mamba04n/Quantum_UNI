@@ -9,7 +9,7 @@
     --admin-border: #e2e2e2;
     --admin-bg: #f6f6f6;
     --admin-surface: #ffffff;
-    --admin-sidebar: #6f1220;
+    --admin-sidebar: #b50e0e;
     --admin-sidebar-muted: #f0d8dd;
     --sidebar-width: 258px;
 }
@@ -33,7 +33,7 @@ body {
 
 .admin-sidebar {
     width: var(--sidebar-width);
-    background: linear-gradient(180deg, #8f1d2c 0%, #5f0f1b 100%);
+    background: linear-gradient(180deg, #b50e0e 0%, #9a0101 100%);
     color: #eaf0ff;
     flex-shrink: 0;
     border-right: 1px solid #4f0c17;

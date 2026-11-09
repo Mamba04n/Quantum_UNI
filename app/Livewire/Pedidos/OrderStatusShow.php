@@ -51,6 +51,11 @@ class OrderStatusShow extends Component
     public ?string $supplierEta = null;
     public bool $showCancelConfirmation = false;
     public string $cancelReason = '';
+    public bool $cancelConfirmation = false;
+    public ?int $cancelSupplierId = null;
+    public bool $showFullOrderCancelConfirmation = false;
+    public string $fullOrderCancelReason = '';
+    public bool $fullOrderCancelConfirmation = false;
     public bool $showReplacementForm = false;
     public string $replacementReason = '';
     public ?int $replacementSupplierId = null;

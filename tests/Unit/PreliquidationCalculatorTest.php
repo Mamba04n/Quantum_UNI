@@ -12,6 +12,35 @@ class PreliquidationCalculatorTest extends TestCase
         return array_replace(PreliquidationCalculator::defaults(), ['freight' => 3, 'exchange' => 37], $overrides);
     }
 
+    public function test_final_unit_price_overrides_margin_with_exact_nio_and_actual_profit(): void
+    {
+        $calc = new PreliquidationCalculator;
+        $settings = $this->settings(['taxed' => false, 'commission' => 0, 'freight' => 0, 'customs' => 0, 'local_transport' => 0]);
+        $row = ['quoted_part_number' => 'P827653', 'quoted_quantity' => 12, 'unit_cost' => 67.57, 'weight_lb' => 1, 'assigned_nio' => 3500];
+        $actual = $calc->calculate($settings, [$row]);
+        $this->assertEquals(3500, $actual['rows'][0]['price_nio']);
+        $this->assertEqualsWithDelta(42000, $actual['sales_nio'], 0.000001);
+        $this->assertEqualsWithDelta(3500 / 37, $actual['rows'][0]['price'], 0.000001);
+        $this->assertEqualsWithDelta($actual['sales'] - $actual['ddp'], $actual['net_profit'], 0.000001);
+        $changed = $calc->calculate(array_replace($settings, ['exchange' => 40, 'margin' => 50]), [$row]);
+        $this->assertEqualsWithDelta(42000, $changed['sales_nio'], 0.000001);
+        $this->assertEquals(87.5, $changed['rows'][0]['price']);
+        $usd = $calc->calculate($settings, [array_replace($row, ['assigned_nio' => null, 'assigned_usd' => 100])]);
+        $this->assertEquals(1200, $usd['sales']);
+        $this->assertEquals(44400, $usd['sales_nio']);
+        $loss = $calc->calculate($settings, [array_replace($row, ['assigned_nio' => 100])]);
+        $this->assertLessThan(0, $loss['net_profit']);
+        $this->assertLessThan(0, $loss['net_margin']);
+        $mixed = $calc->calculate($settings, [
+            $row,
+            array_replace($row, ['assigned_nio' => null, 'quoted_quantity' => 2]),
+            array_replace($row, ['item_status' => 'not_quoted']),
+        ]);
+        $this->assertCount(2, $mixed['rows']);
+        $this->assertEqualsWithDelta($mixed['rows'][0]['total'] + $mixed['rows'][1]['total'], $mixed['sales'], 0.000001);
+        $this->assertEquals($mixed['rows'][1]['suggested_price'], $mixed['rows'][1]['price']);
+    }
+
     public function test_matches_all_cached_excel_rows_and_supplier_totals_for_both_transports(): void
     {
         $sheets = json_decode(file_get_contents(__DIR__.'/../Fixtures/preliquidation-excel.json'), true);

@@ -439,34 +439,86 @@
 
     @if($showCancelConfirmation && !$isDeliveryComplete)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" role="dialog" aria-modal="true" aria-labelledby="cancel-order-title">
-            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-700">!</div>
-                <h3 id="cancel-order-title" class="mt-4 text-lg font-black text-slate-950">Confirmar cancelación de partida</h3>
-                <p class="mt-2 text-sm leading-6 text-slate-600">Esta acción marcará la partida seleccionada como cancelada por el proveedor y quedará registrada en el historial. No se puede usar para partidas ya recibidas.</p>
-
-                <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                    <label class="block sm:col-span-2"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Proveedor existente</span><select wire:model="replacementSupplierId" class="mt-1 w-full rounded-lg border-slate-200 text-sm"><option value="">Crear proveedor nuevo</option>@foreach($replacementSuppliers as $supplier)<option value="{{ $supplier->id }}">{{ $supplier->name }}{{ $supplier->contact_name ? ' · '.$supplier->contact_name : '' }}</option>@endforeach</select></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Proveedor nuevo</span><input wire:model="replacementSupplierName" class="mt-1 w-full rounded-lg border-slate-200 text-sm" placeholder="Nombre del proveedor"></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Contacto</span><input wire:model="replacementSupplierContact" class="mt-1 w-full rounded-lg border-slate-200 text-sm" placeholder="Teléfono, correo o contacto"></label>
-                    <label class="block sm:col-span-2"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Nueva pieza *</span><input wire:model="replacementPartName" class="mt-1 w-full rounded-lg border-slate-200 text-sm" placeholder="Nombre del producto o servicio"></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">No. identificación</span><input wire:model="replacementPartNumber" class="mt-1 w-full rounded-lg border-slate-200 text-sm" placeholder="Código / parte"></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Cantidad *</span><input type="number" min="1" wire:model="replacementQuantity" class="mt-1 w-full rounded-lg border-slate-200 text-sm"></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Costo proveedor *</span><input type="number" min="0" step="0.01" wire:model="replacementSupplierUnitCost" class="mt-1 w-full rounded-lg border-slate-200 text-sm"></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Moneda *</span><select wire:model="replacementSupplierCurrency" class="mt-1 w-full rounded-lg border-slate-200 text-sm"><option value="USD">USD · Dólar</option><option value="NIO">NIO · Córdoba</option><option value="EUR">EUR · Euro</option><option value="INR">INR · Rupia</option></select></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Precio cliente C$ *</span><input type="number" min="0" step="0.01" wire:model="replacementClientUnitPrice" class="mt-1 w-full rounded-lg border-slate-200 text-sm"></label>
-                    <label class="block"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Garantía *</span><input wire:model="replacementWarranty" list="replacement-warranties" class="mt-1 w-full rounded-lg border-slate-200 text-sm" required><datalist id="replacement-warranties"><option value="Sin garantía"></option><option value="30 días"></option><option value="3 meses"></option><option value="6 meses"></option><option value="1 año"></option></datalist></label>
-                    <label class="block sm:col-span-2"><span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Respuesta del proveedor / fotos</span><input type="file" wire:model="replacementDocuments" multiple accept=".pdf,image/*,.xlsx,.xls,.csv" class="mt-1 block w-full rounded-lg border border-slate-200 p-2 text-xs">@if(count($replacementDocuments))<p class="mt-1 text-[10px] font-bold text-slate-500">{{ count($replacementDocuments) }} archivo(s) listo(s).</p>@endif</label>
+            <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="cancel-order-title" class="text-lg font-black text-slate-950">Confirmar cancelación de partida</h3>
+                        <p class="text-xs text-slate-500">Esta acción registrará que el proveedor no abastecerá esta partida.</p>
+                    </div>
                 </div>
-                <label class="mt-4 block">
-                    <span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Motivo de cancelación</span>
-                    <textarea wire:model="cancelReason" rows="3" class="mt-1 w-full rounded-lg border-slate-200 text-sm" placeholder="Ej.: El proveedor confirmó que ya no tiene disponibilidad."></textarea>
-                    @error('cancelReason') <p class="mt-1 text-xs font-bold text-rose-700">{{ $message }}</p> @enderror
-                </label>
+
+                {{-- Resumen de la partida --}}
+                <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+                    <div class="flex justify-between font-semibold text-slate-700">
+                        <span>Partida:</span>
+                        <span class="font-bold text-slate-900">{{ $selectedItem->product?->name ?: $selectedItem->description ?: 'Partida #'.$selectedItem->id }}</span>
+                    </div>
+                    @if($selectedItem->part_number)
+                        <div class="mt-1 flex justify-between text-slate-600">
+                            <span>No. de parte / Código:</span>
+                            <span class="font-mono font-medium text-slate-800">{{ $selectedItem->part_number }}</span>
+                        </div>
+                    @endif
+                    <div class="mt-1 flex justify-between text-slate-600">
+                        <span>Cantidad ordenada:</span>
+                        <span class="font-bold text-slate-800">{{ (float) $selectedItem->quantity_ordered }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-3">
+                    {{-- Proveedor a cancelar --}}
+                    <div>
+                        <label class="block text-[11px] font-black uppercase tracking-wide text-slate-600">
+                            Proveedor a cancelar
+                        </label>
+                        <select wire:model="cancelSupplierId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-200">
+                            <option value="">Selecciona o confirma el proveedor...</option>
+                            @foreach($replacementSuppliers as $supplier)
+                                <option value="{{ $supplier->id }}">{{ $supplier->name }}{{ $supplier->contact_name ? ' · '.$supplier->contact_name : '' }}</option>
+                            @endforeach
+                        </select>
+                        @error('cancelSupplierId') <p class="mt-1 text-xs font-bold text-rose-700">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Motivo de cancelación --}}
+                    <div>
+                        <label class="block text-[11px] font-black uppercase tracking-wide text-slate-600">
+                            Motivo de cancelación <span class="text-rose-600">*</span>
+                        </label>
+                        <textarea wire:model="cancelReason" rows="3" class="mt-1 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800 shadow-sm placeholder:text-slate-400 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-200" placeholder="Ej.: El proveedor notificó que la pieza está descontinuada / sin disponibilidad."></textarea>
+                        @error('cancelReason') <p class="mt-1 text-xs font-bold text-rose-700">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Doble verificación --}}
+                    <div class="rounded-xl border border-rose-200 bg-rose-50/60 p-3">
+                        <label class="flex items-start gap-2.5 cursor-pointer">
+                            <input type="checkbox" wire:model.live="cancelConfirmation" class="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-600 focus:ring-rose-400">
+                            <span class="text-xs font-medium text-slate-800">
+                                Confirmo la cancelación definitiva de esta partida por parte del proveedor. Entiendo que quedará registrada en la trazabilidad del pedido.
+                            </span>
+                        </label>
+                        @error('cancelConfirmation') <p class="mt-1 text-xs font-bold text-rose-700">{{ $message }}</p> @enderror
+                    </div>
+                </div>
 
                 <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="closeSupplierCancellation" class="rounded-lg border border-slate-200 px-4 py-2.5 text-xs font-black text-slate-700 hover:bg-slate-50">Volver sin cancelar</button>
-                    <button type="button" wire:click="cancelBySupplier" class="rounded-lg bg-rose-600 px-4 py-2.5 text-xs font-black text-white hover:bg-rose-700" wire:loading.attr="disabled" wire:target="cancelBySupplier">
-                        <span wire:loading.remove wire:target="cancelBySupplier">Sí, cancelar partida</span>
+                    <button type="button" wire:click="closeSupplierCancellation" class="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                        Volver sin cancelar
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="cancelBySupplier"
+                        @if(! $cancelConfirmation) disabled @endif
+                        class="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        wire:loading.attr="disabled"
+                        wire:target="cancelBySupplier"
+                    >
+                        <span wire:loading.remove wire:target="cancelBySupplier">Confirmar cancelación de partida</span>
                         <span wire:loading wire:target="cancelBySupplier">Cancelando...</span>
                     </button>
                 </div>

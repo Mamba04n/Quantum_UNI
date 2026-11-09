@@ -55,6 +55,8 @@ class ClientOfferDocumentMapper
             $item->serial_number ?? null,
         ]);
 
+        $warrantyInfo = $this->warrantyInfo($item);
+
         return [
             'part_name' => $partName,
             'description' => $description,
@@ -70,6 +72,49 @@ class ClientOfferDocumentMapper
             'warranty' => $selection?->warranty,
             'warranty_type' => $item->warranty_type,
             'has_warranty_extension' => $item->has_warranty_extension,
+            'warranty_label' => $warrantyInfo['label'],
+            'warranty_code' => $warrantyInfo['code'],
+            'warranty_badge_bg' => $warrantyInfo['badge_bg'],
+            'warranty_badge_text' => $warrantyInfo['badge_text'],
+        ];
+    }
+
+    private function warrantyInfo(QuotationRequestItem $item): array
+    {
+        $type = strtoupper(trim((string) $item->warranty_type));
+        if (in_array($type, ['', 'NONE', 'NINGUNA', 'SIN GARANTÍA'], true)) {
+            return [
+                'label' => 'Sin garantía',
+                'code' => '—',
+                'badge_bg' => '#f1f5f9',
+                'badge_text' => '#94a3b8',
+            ];
+        }
+
+        $info = match ($type) {
+            'A1' => ['label' => 'A1 (6-12 meses)', 'bg' => '#0284c7', 'text' => '#ffffff'],
+            'A2' => ['label' => 'A2 (6 meses)',    'bg' => '#bae6fd', 'text' => '#0369a1'],
+            'B1' => ['label' => 'B1 (6 meses)',    'bg' => '#0d9488', 'text' => '#ffffff'],
+            'B2' => ['label' => 'B2 (2-3 meses)',  'bg' => '#99f6e4', 'text' => '#0f766e'],
+            'C1' => ['label' => 'C1 (2 meses)',    'bg' => '#d97706', 'text' => '#ffffff'],
+            'C2' => ['label' => 'C2 (1 mes)',      'bg' => '#fde68a', 'text' => '#92400e'],
+            default => ['label' => $type, 'bg' => '#e2e8f0', 'text' => '#475569'],
+        };
+
+        $code = $type;
+        $label = $info['label'];
+        $bg = $info['bg'];
+        $text = $info['text'];
+
+        if ($item->has_warranty_extension) {
+            $label .= ' · Extensión Plus (+50%)';
+        }
+
+        return [
+            'label' => $label,
+            'code' => $code,
+            'badge_bg' => $bg,
+            'badge_text' => $text,
         ];
     }
 

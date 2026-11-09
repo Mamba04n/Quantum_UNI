@@ -1,111 +1,107 @@
 @php
     $startItems = array_intersect_key($allItems, array_flip(['sales.customer-request.create', 'sales.direct-orders.create', 'purchases.create']));
     $pending = array_values(array_filter($metrics, fn ($metric) => $metric['pending'] && $metric['value'] > 0));
-    $webPendingQuotesCount = app(\App\Support\WorkspaceNavigation::class)->allows(auth()->user(), 'sales.quotations.licitacion') ? \App\Models\QuotationRequest::where('source_channel', 'web')
-        ->whereIn('status', [\App\Models\QuotationRequest::STATUS_RECEIVED, \App\Models\QuotationRequest::STATUS_IN_REVIEW])
-        ->whereNull('sale_order_id')
-        ->count() : 0;
 @endphp
 
-<div class="space-y-6" data-testid="home-workbench">
-    @if($webPendingQuotesCount > 0)
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 01-6 0"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-bold text-emerald-950">
-                            {{ $webPendingQuotesCount === 1 ? '1 nueva solicitud de cotización recibida desde la web' : "{$webPendingQuotesCount} nuevas solicitudes de cotización recibidas desde la web" }}
-                        </p>
-                        <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">Pendiente</span>
-                    </div>
-                    <p class="text-xs text-emerald-800">
-                        Los clientes han solicitado cotización desde la tienda online. Requieren licitación a proveedores.
-                    </p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-                <a href="{{ route('sales.quotations.licitacion') }}" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-800 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-900">
-                    Atender en Licitación
-                    <x-workspace-icon name="arrow" class="h-3.5 w-3.5"/>
-                </a>
-            </div>
-        </div>
-    @endif
-
-    {{-- Áreas de trabajo --}}
+<div class="space-y-8" data-testid="home-workbench">
+    {{-- SECCIÓN: ÁREAS DISPONIBLES COMO TARJETAS CON ICONO (SIN SUBMÓDULOS) --}}
     <section aria-labelledby="areas-heading">
-        <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-4">
-                <div>
-                    <h2 id="areas-heading" class="text-base font-semibold text-gray-900">Áreas de trabajo</h2>
-                    <p class="mt-0.5 text-xs text-gray-500">Módulos y procesos organizados por área operativa del negocio.</p>
-                </div>
-                @if($startItems)
-                    <div class="flex flex-wrap items-center gap-2" aria-label="Iniciar una operación">
-                        @foreach($startItems as $destination => [$label, $description])
-                            <a href="{{ route($destination) }}" class="inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors {{ $loop->first ? 'bg-slate-800 text-white shadow-sm hover:bg-slate-900' : 'border border-gray-200 bg-white text-slate-700 hover:bg-gray-50' }}">
-                                <span aria-hidden="true">+</span>{{ $label }}
-                            </a>
-                        @endforeach
-                    </div>
-                @endif
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 id="areas-heading" class="text-base font-bold text-[#1e1e1e]">Áreas operativas</h2>
+                <p class="mt-0.5 text-xs text-gray-500 font-medium">Selecciona un área de trabajo para ver sus procesos y herramientas.</p>
             </div>
-
-            <div class="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach($areas as $key => $workspace)
-                    @php
-                        $itemLabels = implode(' ', array_map(fn($it) => $it[0].' '.$it[1], $workspace['items']));
-                    @endphp
-                    <div x-show="!search.trim() || matches(@js($workspace['title'].' '.$itemLabels))" class="flex flex-col">
-                        <a href="{{ route('workspace', $key) }}" class="group mb-2 flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold bg-slate-50 text-[#6f1220] transition-colors hover:bg-rose-50 hover:text-[#560e19]">
-                            <x-workspace-icon :name="config('workspace-presentation.icons.'.$key, 'grid')" class="h-4 w-4 shrink-0 text-[#6f1220]"/>
-                            <span class="flex-1 truncate">{{ $workspace['title'] }}</span>
-                            <x-workspace-icon name="arrow" class="h-3.5 w-3.5 text-slate-400 opacity-60 transition-transform group-hover:translate-x-0.5"/>
+            @if($startItems)
+                <div class="flex flex-wrap items-center gap-2" aria-label="Iniciar una operación">
+                    @foreach($startItems as $destination => [$label, $description])
+                        <a href="{{ route($destination) }}" class="inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors {{ $loop->first ? 'bg-[#b50e0e] text-white shadow-sm hover:bg-[#9a0101]' : 'border border-[#e8e8e9] bg-white text-gray-700 hover:bg-gray-50' }}">
+                            <span aria-hidden="true">+</span>{{ $label }}
                         </a>
-                        <p class="mb-2 px-2 text-xs text-gray-500 leading-relaxed">{{ $workspace['description'] }}</p>
-                        <ul class="space-y-1">
-                            @foreach($workspace['items'] as $destination => [$label, $desc])
-                                <li x-show="!search.trim() || matches(@js($workspace['title'].' '.$label.' '.$desc))">
-                                    <a href="{{ route($destination) }}" class="block rounded-lg px-2 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900">
-                                        {{ $label }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- Cuadrícula limpia de Áreas compactas --}}
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach($areas as $key => $workspace)
+                @php
+                    $icon = config('workspace-presentation.icons.'.$key, 'grid');
+                    $moduleCount = count($workspace['items']);
+                @endphp
+                <a href="{{ route('workspace', $key) }}"
+                   class="group flex items-center justify-between p-3.5 rounded-xl border border-[#e8e8e9] bg-white transition-all duration-150 hover:border-[#b50e0e]/50 hover:shadow-xs shadow-2xs">
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-[#b50e0e] group-hover:bg-[#b50e0e] group-hover:text-white transition-colors duration-150 shadow-2xs">
+                            <x-portal.icon :name="$icon" class="w-5 h-5" />
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-[#1e1e1e] text-sm group-hover:text-[#b50e0e] transition-colors truncate">
+                                {{ $workspace['title'] }}
+                            </h3>
+                            <p class="text-xs text-gray-500 truncate mt-0.5 font-medium">
+                                {{ $workspace['description'] }}
+                            </p>
+                        </div>
                     </div>
-                @endforeach
-            </div>
+                    <div class="ml-3 shrink-0 flex items-center gap-2">
+                        <span class="hidden sm:inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-400 group-hover:bg-rose-50 group-hover:text-[#b50e0e] transition-colors">
+                            {{ $moduleCount }}
+                        </span>
+                        <x-portal.icon name="arrow" class="w-3.5 h-3.5 text-gray-300 group-hover:text-[#b50e0e] group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                </a>
+            @endforeach
         </div>
     </section>
 
-    {{-- Continuar trabajando y Requiere atención --}}
-    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    {{-- SECCIÓN: Continuar trabajando y Requiere atención --}}
+    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section aria-labelledby="resume-heading" class="min-w-0">
             <div class="mb-3 flex items-center justify-between">
-                <h2 id="resume-heading" class="text-base font-semibold text-gray-900">Continuar trabajando</h2>
-                <span class="text-xs text-gray-500">Cotizaciones recientes</span>
+                <div>
+                    <h2 id="resume-heading" class="text-base font-bold text-[#1e1e1e]">Continuar trabajando</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Cotizaciones y solicitudes en curso asignadas a tu usuario.</p>
+                </div>
             </div>
-            <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div class="overflow-hidden rounded-2xl border border-[#e8e8e9] bg-white shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="w-full whitespace-nowrap text-left text-sm" data-testid="home-current-work">
-                        <thead class="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
-                            <tr>@foreach(['Expediente', 'Cliente', 'Fase actual', 'Siguiente acción'] as $label)<th scope="col" class="px-5 py-3 font-semibold">{{ $label }}</th>@endforeach</tr>
+                        <thead class="border-b border-[#e8e8e9] bg-gray-50/80 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            <tr>
+                                <th scope="col" class="px-5 py-3.5 font-semibold">Expediente</th>
+                                <th scope="col" class="px-5 py-3.5 font-semibold">Cliente</th>
+                                <th scope="col" class="px-5 py-3.5 font-semibold">Fase actual</th>
+                                <th scope="col" class="px-5 py-3.5 font-semibold text-right">Siguiente acción</th>
+                            </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y divide-[#e8e8e9]/60">
                             @forelse($recentQuotes as $recent)
-                                <tr class="transition-colors hover:bg-gray-50/50">
-                                    <td class="px-5 py-3"><a href="{{ $recent['url'] }}" class="font-semibold text-gray-900 underline-offset-4 hover:underline">{{ $recent['reference'] }}</a></td>
-                                    <td class="px-5 py-3 text-gray-600">{{ $recent['client'] }}</td>
-                                    <td class="px-5 py-3 text-gray-600">{{ $recent['stage'] }}</td>
-                                    <td class="px-5 py-3"><a href="{{ $recent['url'] }}" class="inline-flex items-center gap-2 font-semibold text-[#6f1220] underline-offset-4 hover:underline">{{ $recent['action'] }}<x-workspace-icon name="arrow" class="h-4 w-4"/></a></td>
+                                <tr class="transition-colors hover:bg-gray-50/60">
+                                    <td class="px-5 py-3.5">
+                                        <a href="{{ $recent['url'] }}" class="font-bold text-gray-900 hover:text-[#b50e0e] transition-colors">
+                                            {{ $recent['reference'] }}
+                                        </a>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-xs text-gray-600 font-medium">{{ $recent['client'] }}</td>
+                                    <td class="px-5 py-3.5">
+                                        <span class="inline-flex items-center rounded-lg bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
+                                            {{ $recent['stage'] }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-right">
+                                        <a href="{{ $recent['url'] }}" class="inline-flex items-center gap-1.5 font-semibold text-xs text-[#b50e0e] hover:text-[#9a0101] transition-colors">
+                                            <span>{{ $recent['action'] }}</span>
+                                            <x-portal.icon name="arrow" class="w-3.5 h-3.5"/>
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="px-5 py-4 text-sm text-gray-500">No tienes cotizaciones en curso. Inicia una operación o entra a un área.</td></tr>
+                                <tr>
+                                    <td colspan="4" class="px-5 py-8 text-center text-xs text-gray-400 italic">
+                                        No tienes cotizaciones en curso activas. Inicia una nueva operación desde los accesos rápidos.
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -116,12 +112,28 @@
         @if($pending)
             <section aria-labelledby="home-pending-heading" class="min-w-0">
                 <div class="mb-3 flex items-center justify-between">
-                    <h2 id="home-pending-heading" class="text-base font-semibold text-gray-900">Requiere atención</h2>
-                    <span class="text-xs text-amber-600 font-medium">Pendientes</span>
+                    <div>
+                        <h2 id="home-pending-heading" class="text-base font-bold text-[#1e1e1e]">Requiere atención</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Indicadores con tareas pendientes.</p>
+                    </div>
+                    <span class="text-[11px] font-bold text-[#b50e0e] bg-rose-50 px-2 py-0.5 rounded-full">Urgente</span>
                 </div>
-                <ul class="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <ul class="divide-y divide-[#e8e8e9]/60 rounded-2xl border border-[#e8e8e9] bg-white shadow-sm overflow-hidden">
                     @foreach($pending as $metric)
-                        <li><a href="{{ route($metric['route']) }}" class="flex items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-gray-50/50"><span class="font-semibold tabular-nums text-amber-700">{{ number_format($metric['value']) }}</span><span class="min-w-0 flex-1 text-gray-700">{{ $metric['label'] }}</span><x-workspace-icon name="arrow" class="h-4 w-4 text-slate-400"/></a></li>
+                        <li>
+                            <a href="{{ route($metric['route']) }}" class="flex items-center gap-3.5 px-5 py-3.5 text-sm transition-colors hover:bg-rose-50/40 group">
+                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-xs font-bold tabular-nums text-[#b50e0e] group-hover:bg-[#b50e0e] group-hover:text-white transition-colors">
+                                    {{ number_format($metric['value']) }}
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-gray-800 truncate group-hover:text-[#b50e0e] transition-colors">{{ $metric['label'] }}</p>
+                                    @if(isset($metric['context']))
+                                        <p class="text-[10px] text-gray-400 truncate">{{ $metric['context'] }}</p>
+                                    @endif
+                                </div>
+                                <x-portal.icon name="arrow" class="w-3.5 h-3.5 text-gray-300 group-hover:text-[#b50e0e] group-hover:translate-x-0.5 transition-all"/>
+                            </a>
+                        </li>
                     @endforeach
                 </ul>
             </section>

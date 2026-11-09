@@ -14,7 +14,23 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Poppins', 'Figtree', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                brand: {
+                    DEFAULT: '#b50e0e',
+                    hover: '#9a0101',
+                    dark: '#800707',
+                    light: '#fef2f2',
+                    50: '#fef2f2',
+                    100: '#fee2e2',
+                    200: '#fecaca',
+                    500: '#ef4444',
+                    600: '#b50e0e',
+                    700: '#9a0101',
+                    800: '#800707',
+                    900: '#5a0505',
+                },
             },
         },
     },

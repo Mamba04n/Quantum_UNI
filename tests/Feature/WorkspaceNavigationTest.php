@@ -163,7 +163,7 @@ class WorkspaceNavigationTest extends TestCase
             ->assertSet('area', 'compras');
 
         Livewire::test(ExplorerQuickSearch::class)
-            ->assertSee('Buscar en Quantum...')
+            ->assertSee('Buscar pedido, código, cliente o módulo...')
             ->assertSet('area', null);
     }
 

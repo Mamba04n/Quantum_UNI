@@ -23,6 +23,17 @@
         'download' => 'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',
         'clock' => 'M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
         'chat' => 'M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8ZM8 9h8m-8 4h5',
+        'chevron' => 'm15 18-6-6 6-6',
+        'chevron-down' => 'm6 9 6 6 6-6',
+        'grid' => 'M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7Z',
+        'chart' => 'M4 19V5m0 14h16M8 15v-4m4 4V7m4 8v-6',
+        'wallet' => 'M20 8V5H5a2 2 0 0 0 0 4h16v11H5a2 2 0 0 1-2-2V7m18 6h-5v3h5',
+        'building' => 'M3 21h18M5 21V3h10v18m0-12h4v12M8 7h4M8 11h4M8 15h4m-3 6v-3',
+        'cart' => 'M3 4h2l2 12h11l3-9H6m2 13h.01M18 20h.01',
+        'document' => 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 0v6h6M8 12h8m-8 4h5',
+        'settings' => 'M4 7h16M4 17h16M8 4v6m8 4v6',
+        'ticket' => 'M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2Zm7 3h6',
+        'activity' => 'M22 12h-4l-3 9L9 3l-3 9H2',
     ];
 @endphp
 <svg {{ $attributes->class(['cp-icon']) }} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $paths[$name] ?? $paths['box'] }}" /></svg>

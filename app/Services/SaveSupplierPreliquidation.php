@@ -23,6 +23,8 @@ class SaveSupplierPreliquidation
             'rows.*.response_item_id' => 'nullable|integer|distinct',
             'rows.*.quoted_description' => 'required|string|max:1000', 'rows.*.quoted_quantity' => 'required|numeric|gt:0|max:999999999|decimal:0,2',
             'rows.*.unit_cost' => 'required|numeric|min:0|max:999999999|decimal:0,2', 'rows.*.weight_lb' => 'required|numeric|min:0|max:999999999',
+            'rows.*.assigned_usd' => 'nullable|numeric|min:0|max:999999999|decimal:0,2',
+            'rows.*.assigned_nio' => 'nullable|numeric|min:0|max:999999999|decimal:0,2',
             'settings.exchange' => 'required|numeric|gt:0|max:1000000', 'settings.margin' => 'required|numeric|min:0|max:99.99',
         ])->validate();
         return DB::transaction(function () use ($quote, $supplier, $responseId, $settings, $rows, $header, $user, $revision) {
@@ -96,15 +98,8 @@ class SaveSupplierPreliquidation
 
                 if ($hasPreliqPriceCols) {
                     $rowCalc = $calcResult['rows'][$key] ?? [];
-                    $assignedUsd = filled($rows[$key]['assigned_usd'] ?? null) && (float) $rows[$key]['assigned_usd'] > 0
-                        ? (float) $rows[$key]['assigned_usd']
-                        : null;
-                    $assignedNio = filled($rows[$key]['assigned_nio'] ?? null) && (float) $rows[$key]['assigned_nio'] > 0
-                        ? (float) $rows[$key]['assigned_nio']
-                        : null;
-
-                    $finalUsd = $assignedUsd ?? (float) ($rowCalc['price'] ?? 0);
-                    $finalNio = $assignedNio ?? (float) ($rowCalc['price_nio'] ?? ($finalUsd * (float) ($settings['exchange'] ?? 37)));
+                    $finalUsd = (float) ($rowCalc['price'] ?? 0);
+                    $finalNio = (float) ($rowCalc['price_nio'] ?? 0);
                     $ddp = (float) ($rowCalc['ddp'] ?? 0);
                     $cif = (float) ($rowCalc['cif'] ?? 0);
 
@@ -123,14 +118,8 @@ class SaveSupplierPreliquidation
                     $selection = \App\Models\SupplierBidSelection::where('supplier_bid_response_item_id', $responseItemId)->first();
                     if ($selection && $selection->quotationItem) {
                         $rowCalc = $calcResult['rows'][$key] ?? [];
-                        $assignedUsd = filled($rows[$key]['assigned_usd'] ?? null) && (float) $rows[$key]['assigned_usd'] > 0
-                            ? (float) $rows[$key]['assigned_usd']
-                            : null;
-                        $assignedNio = filled($rows[$key]['assigned_nio'] ?? null) && (float) $rows[$key]['assigned_nio'] > 0
-                            ? (float) $rows[$key]['assigned_nio']
-                            : null;
-                        $finalUsd = $assignedUsd ?? (float) ($rowCalc['price'] ?? 0);
-                        $finalNio = $assignedNio ?? (float) ($rowCalc['price_nio'] ?? ($finalUsd * (float) ($settings['exchange'] ?? 37)));
+                        $finalUsd = (float) ($rowCalc['price'] ?? 0);
+                        $finalNio = (float) ($rowCalc['price_nio'] ?? 0);
 
                         if (\Illuminate\Support\Facades\Schema::hasColumn('supplier_bid_selections', 'selected_unit_price')) {
                             $selection->update([
@@ -170,7 +159,7 @@ class SaveSupplierPreliquidation
             $rfq->update(['status' => SupplierRfqDocument::STATUS_SUPPLIER_RESPONSE_RECEIVED]);
             $tracker = app(SupplierBidResponseTracker::class);
             $tracker->markRequestPendingResponse($quote);
-            if ($tracking = $tracker->trackerFor($quote)) {
+            if ($tracking = $tracker->trackerFor($quote, false)) {
                 $tracker->syncTrackerToSupplier($tracking, $quote, $supplier);
                 $tracker->addResponseReference($tracking, $response, $supplier);
             }

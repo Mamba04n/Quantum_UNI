@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: Quantum Finance API
+  version: 1.0.0
+  description: API financiera de solo lectura; la única mutación de negocio permitida administra tokens de dispositivos.
+servers:
+  - url: https://example.invalid/api/v1/finance
+security:
+  - bearerAuth: []
+paths:
+  /tokens:
+    post:
+      security: []
+      summary: Enrolar un dispositivo aprobado y emitir un bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TokenRequest' }
+      responses:
+        '201': { description: Token emitido una sola vez }
+        '403': { description: Cuenta o abilities no autorizadas }
+        '422': { description: Credenciales o código de enrolamiento inválidos }
+        '429': { description: Límite excedido }
+    get:
+      summary: Listar dispositivos propios
+      responses:
+        '200': { description: Lista de dispositivos }
+    delete:
+      summary: Revocar todos los dispositivos propios
+      responses:
+        '204': { description: Tokens revocados }
+  /tokens/{deviceId}:
+    delete:
+      summary: Revocar un dispositivo propio
+      parameters: [{ $ref: '#/components/parameters/DeviceId' }]
+      responses:
+        '204': { description: Token revocado o ya inexistente }
+  /receivables:
+    get:
+      summary: Listar cuentas por cobrar autorizadas
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedRecords' }
+  /receivables/{id}:
+    get:
+      summary: Consultar una cuenta por cobrar autorizada
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Cuenta por cobrar }
+        '403': { description: Registro fuera del alcance }
+        '404': { description: Registro inexistente }
+  /payables:
+    get:
+      summary: Listar cuentas por pagar autorizadas
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedRecords' }
+  /payables/{id}:
+    get:
+      summary: Consultar una cuenta por pagar autorizada
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Cuenta por pagar }
+        '403': { description: Registro fuera del alcance }
+        '404': { description: Registro inexistente }
+  /invoices:
+    get:
+      summary: Listar facturas autorizadas
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedRecords' }
+  /invoices/{id}:
+    get:
+      summary: Consultar una factura autorizada
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Factura }
+        '403': { description: Registro fuera del alcance }
+        '404': { description: Registro inexistente }
+  /payments:
+    get:
+      summary: Listar pagos autorizados
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedRecords' }
+  /payments/{id}:
+    get:
+      summary: Consultar un pago autorizado
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Pago }
+        '403': { description: Registro fuera del alcance }
+        '404': { description: Registro inexistente }
+  /exchange-rates:
+    get:
+      summary: Listar tasas de cambio y su procedencia
+      responses:
+        '200': { $ref: '#/components/responses/PaginatedRecords' }
+  /documents/{type}/{id}:
+    get:
+      summary: Descargar un documento financiero privado autorizado
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema: { type: string, enum: [cxc, cxp, invoice, payment] }
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Archivo privado }
+        '403': { description: Registro fuera del alcance }
+        '404': { description: Registro o archivo inexistente }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    PaginatedRecords:
+      description: Colección paginada; montos y tasas se representan como cadenas decimales
+  schemas:
+    TokenRequest:
+      type: object
+      required: [email, password, enrollment_code, device_id, device_name, abilities]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+        enrollment_code: { type: string, minLength: 48, maxLength: 48 }
+        device_id: { type: string, format: uuid }
+        device_name: { type: string, maxLength: 100 }
+        abilities:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - finance:receivables:read
+              - finance:payables:read
+              - finance:invoices:read
+              - finance:payments:read
+              - finance:documents:read
+              - finance:rates:read

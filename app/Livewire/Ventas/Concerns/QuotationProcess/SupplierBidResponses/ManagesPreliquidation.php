@@ -163,6 +163,32 @@ trait ManagesPreliquidation
         return app(PreliquidationCalculator::class)->calculate($this->preliquidation, $this->supplierBidItems + $this->supplierBidExtraItems);
     }
 
+    public function updatedSupplierBidItems($value, $key): void
+    {
+        $this->updateFinalClientPrice('supplierBidItems', $key);
+    }
+
+    public function updatedSupplierBidExtraItems($value, $key): void
+    {
+        $this->updateFinalClientPrice('supplierBidExtraItems', $key);
+    }
+
+    private function updateFinalClientPrice(string $group, ?string $key): void
+    {
+        if ($key === null) {
+            return;
+        }
+        $parts = explode('.', $key);
+        if (count($parts) !== 2 || !in_array($parts[1], ['assigned_usd', 'assigned_nio'], true)) {
+            return;
+        }
+        [$itemKey, $field] = $parts;
+        // Keep the entered currency as the source; derive its equivalent at the current rate.
+        $other = $field === 'assigned_usd' ? 'assigned_nio' : 'assigned_usd';
+        $this->{$group}[$itemKey][$other] = null;
+        $this->preliquidationChange = 'Precio final del cliente actualizado. Se recalcularon la venta y la utilidad.';
+    }
+
     private function validatePreliquidation(): void
     {
         if ($this->preliquidationLegacyCosts) {
@@ -189,7 +215,7 @@ trait ManagesPreliquidation
                 $rules[$group.'.'.$key.'.notes'] = 'nullable|string|max:1000';
                 $rules[$group.'.'.$key.'.unit_cost'] = 'required|numeric|min:0|max:999999999|decimal:0,2';
                 $rules[$group.'.'.$key.'.quoted_quantity'] = 'required|numeric|gt:0|max:999999999|decimal:0,2';
-                foreach (['assigned_usd', 'assigned_nio'] as $field) $rules[$group.'.'.$key.'.'.$field] = 'nullable|numeric|min:0|max:999999999';
+                foreach (['assigned_usd', 'assigned_nio'] as $field) $rules[$group.'.'.$key.'.'.$field] = 'nullable|numeric|min:0|max:999999999|decimal:0,2';
                 if (($row['item_status'] ?? '') !== 'not_quoted') {
                     $rules[$group.'.'.$key.'.weight_lb'] = 'required|numeric|min:0|max:999999999';
                 }

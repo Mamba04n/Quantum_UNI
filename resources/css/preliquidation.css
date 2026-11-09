@@ -36,7 +36,7 @@
 }
 /* Dense financial worksheet; deliberately scoped to preliquidation. */
 .preliq-sheet { display:grid; gap:10px; min-width:0; }
-.preliq-config { display:grid; grid-template-columns:1.4fr 1fr 1fr .8fr .8fr; gap:10px; align-items:end; }
+.preliq-config { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; align-items:end; }
 .preliq-config label, .preliq-supplier > span { font-size:11px; font-weight:600; color:#64748b; }
 .preliq-config label > :is(input,select) { display:block; margin-top:3px; }
 .preliq-supplier { min-width:0; }
@@ -60,6 +60,9 @@
 .preliq-items td.preliq-detail { white-space:normal; background:#fff; }
 .preliq-items td.preliq-detail > div { max-width:960px; }
 .preliq-items td input { display:block; }
+.preliq-items td.preliq-client-price { min-width:180px; }
+.preliq-price-control { display:grid; grid-template-columns:minmax(90px,1fr) 70px; gap:4px; }
+.preliq-price-note { margin-top:3px; font-size:11px; line-height:16px; color:#64748b; }
 .preliq-row-state { display:block; margin-top:3px; line-height:16px; }
 .preliq-items details { display:block; max-width:100%; margin-top:2px; font-size:11px; white-space:normal; }
 .preliq-items details summary { overflow-wrap:anywhere; }

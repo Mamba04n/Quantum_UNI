@@ -272,11 +272,12 @@
         <thead>
             <tr>
                 <th style="width: 5%;" class="center">Ítem</th>
-                <th style="width: 18%;">Código / Referencia</th>
-                <th style="width: 41%;">Descripción del Producto / Servicio</th>
-                <th style="width: 8%;" class="center">Cant.</th>
-                <th style="width: 13%;" class="right">Precio Unitario</th>
-                <th style="width: 15%;" class="right">Subtotal</th>
+                <th style="width: 15%;">Código / Referencia</th>
+                <th style="width: 33%;">Descripción del Producto / Servicio</th>
+                <th style="width: 10%;" class="center">Garantía</th>
+                <th style="width: 7%;" class="center">Cant.</th>
+                <th style="width: 14%;" class="right">Precio Unitario</th>
+                <th style="width: 16%;" class="right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -291,6 +292,16 @@
                         @endif
                         @if(($item['brand'] ?? '-') !== '-')
                             <div style="font-size: 7px; color: #0284c7; font-weight: bold; margin-top: 1px;">Marca: {{ $item['brand'] }}</div>
+                        @endif
+                    </td>
+                    <td class="center" style="vertical-align: middle; text-align: center;">
+                        @if(!empty($item['warranty_type']) && !in_array(strtoupper(trim((string)$item['warranty_type'])), ['', 'NONE', 'NINGUNA', 'SIN GARANTÍA'], true))
+                            <div style="display: inline-block; background: {{ $item['warranty_badge_bg'] ?? '#f1f5f9' }}; color: {{ $item['warranty_badge_text'] ?? '#ffffff' }}; font-weight: bold; font-size: 8px; padding: 2.5px 7px; border-radius: 3px; text-align: center;">{{ $item['warranty_code'] }}</div>
+                            @if(!empty($item['has_warranty_extension']))
+                                <div style="font-size: 6.5px; color: #7c3aed; font-weight: bold; margin-top: 1.5px; text-align: center;">+50% Plus</div>
+                            @endif
+                        @else
+                            <span style="color: #94a3b8; font-size: 8px;">—</span>
                         @endif
                     </td>
                     <td class="center bold">{{ number_format((float) ($item['quantity'] ?? 1), 0) }}</td>

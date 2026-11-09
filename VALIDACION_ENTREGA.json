@@ -1,0 +1,87 @@
+{
+  "date": "2026-11-09",
+  "php_tests_passed": 41,
+  "build": "passed",
+  "blade_compilation": "passed",
+  "academic_installation": "passed",
+  "browser": {
+    "screens": [
+      {
+        "path": "/admin/users",
+        "width": 1440,
+        "status": 200,
+        "overflow": false,
+        "screenshot": "1440-admin-users.png"
+      },
+      {
+        "path": "/inicio/finanzas",
+        "width": 1440,
+        "status": 200,
+        "overflow": false,
+        "screenshot": "1440-inicio-finanzas.png"
+      },
+      {
+        "path": "/finance/cxc",
+        "width": 1440,
+        "status": 200,
+        "overflow": false,
+        "screenshot": "1440-finance-cxc.png"
+      },
+      {
+        "path": "/inventory/products",
+        "width": 1440,
+        "status": 200,
+        "overflow": false,
+        "screenshot": "1440-inventory-products.png"
+      },
+      {
+        "path": "/admin/users",
+        "width": 390,
+        "status": 200,
+        "overflow": true,
+        "screenshot": "390-admin-users.png"
+      },
+      {
+        "path": "/inicio/finanzas",
+        "width": 390,
+        "status": 200,
+        "overflow": true,
+        "screenshot": "390-inicio-finanzas.png"
+      },
+      {
+        "path": "/finance/cxc",
+        "width": 390,
+        "status": 200,
+        "overflow": true,
+        "screenshot": "390-finance-cxc.png"
+      },
+      {
+        "path": "/inventory/products",
+        "width": 390,
+        "status": 200,
+        "overflow": true,
+        "screenshot": "390-inventory-products.png"
+      }
+    ],
+    "page_errors": [],
+    "livewire_search": "passed",
+    "hidden_payment_navigation": "passed"
+  },
+  "notes": [
+    "La expectativa antigua del buscador se actualizó y sus 13 pruebas se ejecutaron de nuevo.",
+    "La cabecera existente desborda a 390px; se conserva el diseño original por el alcance de solo ocultar módulos.",
+    "Sin errores JavaScript ni respuestas Livewire fallidas en las pantallas revisadas.",
+    "Ocultar módulos no bloquea sus rutas directas."
+  ],
+  "secret_scan_findings": [],
+  "excluded": [
+    ".env",
+    "vendor",
+    "node_modules",
+    ".git",
+    "datos empresariales",
+    "sesiones",
+    "logs",
+    "archivos privados"
+  ]
+}

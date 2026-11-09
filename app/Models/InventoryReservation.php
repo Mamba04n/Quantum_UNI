@@ -11,9 +11,23 @@ class InventoryReservation extends Model
 
     protected $casts = [
         'quantity' => 'decimal:2',
+        'consumed_quantity' => 'decimal:2',
         'reserved_at' => 'datetime',
         'released_at' => 'datetime',
+        'consumed_at' => 'datetime',
+        'external_context' => 'array',
+        'version' => 'integer',
     ];
+
+    public function integrationClient(): BelongsTo
+    {
+        return $this->belongsTo(IntegrationClient::class, 'integration_client_id');
+    }
+
+    public function stockMove(): BelongsTo
+    {
+        return $this->belongsTo(StockMove::class, 'stock_move_id');
+    }
 
     public function quotationRequest(): BelongsTo
     {

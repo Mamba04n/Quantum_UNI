@@ -1,9 +1,5 @@
 @php
     $optionalColumns = [
-        'assigned_usd' => 'Precio asignado UNIT (USD)',
-        'assigned_total' => 'Precio asignado Total (USD)',
-        'assigned_nio' => 'Precio asignado UNIT (C$)',
-        'assigned_total_nio' => 'Precio asignado Total (C$)',
         'total_weight' => 'Peso total',
         'subtotal_exw' => 'Subtotal EXW',
         'cif_nio' => 'CIF C$',
@@ -14,9 +10,8 @@
         'gross_profit' => 'Utilidad bruta USD',
         'gross_margin' => 'Utilidad bruta %',
     ];
-    $hasAssignedPrice = collect($supplierBidItems + $supplierBidExtraItems)->contains(fn ($r) => filled($r['assigned_usd'] ?? null) && (float) $r['assigned_usd'] > 0);
 @endphp
-<div class="min-w-0" x-data="{ columns: @js($hasAssignedPrice ? ['assigned_usd'] : []), expanded: null, init() { try { const saved = JSON.parse(localStorage.getItem('preliq-columns-{{ auth()->id() }}') || '[]'); if (Array.isArray(saved) && saved.length) { this.columns = saved; } @if($hasAssignedPrice) if (!this.columns.includes('assigned_usd')) this.columns.push('assigned_usd'); @endif } catch {} this.$watch('columns', value => { try { localStorage.setItem('preliq-columns-{{ auth()->id() }}', JSON.stringify(value)) } catch {} }) } }">
+<div class="min-w-0" x-data="{ columns: [], expanded: null, init() { try { const saved = JSON.parse(localStorage.getItem('preliq-columns-{{ auth()->id() }}') || '[]'); if (Array.isArray(saved)) this.columns = saved.filter(column => @js(array_keys($optionalColumns)).includes(column)); } catch {} this.$watch('columns', value => { try { localStorage.setItem('preliq-columns-{{ auth()->id() }}', JSON.stringify(value)) } catch {} }) } }">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2 text-sm">
             <span class="text-gray-500">{{ $totals['count'] }} partidas · {{ number_format($totals['weight'], 2) }} lb · {{ $totals['complete'] }}/{{ $totals['count'] }} completas</span>
@@ -42,7 +37,7 @@
                     <th scope="col" class="text-right" title="Unit Price / Costo unitario EXW cotizado">Precio unit. (EXW)</th>
                     <th scope="col" class="text-right">CIF unit. USD</th>
                     <th scope="col" class="text-right">DDP unit. USD</th>
-                    <th scope="col" class="text-right">Venta unit. USD</th>
+                    <th scope="col" class="text-right" title="Escribe el precio por unidad en C$ o USD. Vacío usa el margen.">Precio final unitario</th>
                     <th scope="col" class="text-right">Venta total USD</th>
                     @foreach($optionalColumns as $column => $label)<th scope="col" x-show="columns.includes('{{ $column }}')" x-cloak class="text-right">{{ $label }}</th>@endforeach
                     <th scope="col">Acciones</th>
@@ -103,7 +98,11 @@
                                 <input aria-label="Precio unitario EXW USD" type="number" min="0" step="0.01" wire:model.live.debounce.300ms="{{ $group }}.{{ $key }}.unit_cost" class="{{ $control }} text-right tabular-nums font-semibold" placeholder="0.00">
                                 @error($group.'.'.$key.'.unit_cost')<span class="block whitespace-normal text-xs text-rose-700">{{ $message }}</span>@enderror
                             </td>
-                            @foreach(['cif', 'ddp', 'price', 'total'] as $field)<td class="text-right tabular-nums" title="{{ $preliquidationChange }}">{{ isset($result[$field]) ? number_format($result[$field], 2) : '—' }}</td>@endforeach
+                            @foreach(['cif', 'ddp'] as $field)<td class="text-right tabular-nums" title="{{ $preliquidationChange }}">{{ isset($result[$field]) ? number_format($result[$field], 2) : '—' }}</td>@endforeach
+                            <td class="preliq-client-price" x-data="{ priceCurrency: @js((float) ($row['assigned_usd'] ?? 0) > 0 ? 'USD' : 'NIO') }">
+                                @include('livewire.ventas.cotizaciones.licitacion-proveedor.partials.preliquidacion-precio-cliente')
+                            </td>
+                            <td class="text-right tabular-nums">{{ isset($result['total']) ? number_format($result['total'], 2) : '—' }}</td>
                             @foreach($optionalColumns as $column => $label)
                                 <td x-show="columns.includes('{{ $column }}')" x-cloak class="text-right tabular-nums">
                                     @if(in_array($column, ['assigned_usd', 'assigned_nio']))
@@ -171,8 +170,6 @@
                     @php
                         $allItems = $supplierBidItems + $supplierBidExtraItems;
                         $totalQuantity = collect($allItems)->where('item_status', '!=', 'not_quoted')->sum(fn ($r) => (float) ($r['quoted_quantity'] ?? 0));
-                        $totalAssignedUsd = collect($totals['rows'])->sum('assigned_total');
-                        $totalAssignedNio = collect($totals['rows'])->sum('assigned_total_nio');
                         $totalCifNio = collect($totals['rows'])->sum('cif_nio');
                         $totalCifUsd = $totals['cif'] ?? ($totals['exw'] + ($totals['costs']['handling'] ?? 0) + ($totals['costs']['freight'] ?? 0));
                     @endphp
@@ -203,10 +200,6 @@
                                 $ {{ number_format($totals['sales'], 2) }}
                             </td>
                             {{-- Columnas opcionales --}}
-                            <td x-show="columns.includes('assigned_usd')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-gray-400 font-normal">—</td>
-                            <td x-show="columns.includes('assigned_total')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-slate-900 font-bold">$ {{ number_format($totalAssignedUsd, 2) }}</td>
-                            <td x-show="columns.includes('assigned_nio')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-gray-400 font-normal">—</td>
-                            <td x-show="columns.includes('assigned_total_nio')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-slate-900 font-bold">C$ {{ number_format($totalAssignedNio, 2) }}</td>
                             <td x-show="columns.includes('total_weight')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-slate-900 font-bold">{{ number_format($totals['weight'], 2) }} lb</td>
                             <td x-show="columns.includes('subtotal_exw')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-slate-900 font-bold">$ {{ number_format($totals['exw'], 2) }}</td>
                             <td x-show="columns.includes('cif_nio')" x-cloak class="px-3 py-2.5 text-right tabular-nums text-slate-900 font-bold">C$ {{ number_format($totalCifNio, 2) }}</td>

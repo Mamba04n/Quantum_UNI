@@ -183,8 +183,15 @@ class AcquisitionBoard extends Component
 
     public function save(): void
     {
+        if (!empty($this->form['contacts'])) {
+            $this->form['contacts'] = array_values(array_filter($this->form['contacts'], fn ($c) => filled($c['name'] ?? null)));
+        }
+        if (!empty($this->form['machines'])) {
+            $this->form['machines'] = array_values(array_filter($this->form['machines'], fn ($m) => filled($m['type'] ?? null)));
+        }
+
         $p = $this->creating ? $this->service()->create($this->form, $this->token, $this->duplicateAck) : $this->service()->update($this->selectedId ?? 0, $this->version, $this->form, $this->duplicateAck);
-        $this->notice = 'Prospecto guardado.';
+        $this->notice = 'Prospecto guardado exitosamente.';
         // Reassignment may remove the record from the current user's scope.
         if ($this->service()->visible()->whereKey($p->id)->exists()) {
             $this->open($p->id);
@@ -209,11 +216,27 @@ class AcquisitionBoard extends Component
         $this->move($this->selectedId ?? 0, $this->version, $this->targetStage);
     }
 
-    public function recordContact(): void
+    public function recordContact(bool $advanceToContactados = false): void
     {
-        $this->service()->contact($this->selectedId ?? 0, $this->version, $this->interaction);
-        $this->notice = 'Contacto registrado.';
+        $p = $this->service()->contact($this->selectedId ?? 0, $this->version, $this->interaction);
+        $this->notice = 'Contacto registrado exitosamente.';
+        if ($advanceToContactados) {
+            $fresh = $this->service()->visible()->find($this->selectedId);
+            if ($fresh && $fresh->stage === 'prospectos') {
+                try {
+                    $fresh = $this->service()->move($fresh->id, $fresh->version, 'contactados');
+                    $this->notice = 'Contacto registrado y prospecto avanzado a Contactados.';
+                } catch (\Exception $e) {
+                    // Si alguna regla adicional fallase, se conserva la notificación de contacto
+                }
+            }
+        }
         $this->open($this->selectedId);
+    }
+
+    public function recordContactAndAdvance(): void
+    {
+        $this->recordContact(advanceToContactados: true);
     }
 
     public function discard(): void

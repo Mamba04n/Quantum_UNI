@@ -255,11 +255,16 @@ trait GestionaAvanceSeguimiento
             throw ValidationException::withMessages(['item' => 'Selecciona una partida antes de cancelar.']);
         }
 
-        if (in_array($this->selectedItem()->status, [OrderStatusService::STATUS_DELIVERED, OrderStatusService::STATUS_CLOSED], true)) {
+        $item = $this->selectedItem();
+
+        if (in_array($item->status, [OrderStatusService::STATUS_DELIVERED, OrderStatusService::STATUS_CLOSED], true)) {
             throw ValidationException::withMessages(['item' => 'No puedes cancelar por proveedor una partida ya entregada.']);
         }
 
+        $this->cancelSupplierId = $item->supplier_id
+            ?: ($item->purchaseOrderItem?->order?->supplier_id ?: null);
         $this->cancelReason = '';
+        $this->cancelConfirmation = false;
         $this->showCancelConfirmation = true;
     }
 
@@ -267,6 +272,9 @@ trait GestionaAvanceSeguimiento
     {
         $this->showCancelConfirmation = false;
         $this->cancelReason = '';
+        $this->cancelConfirmation = false;
+        $this->cancelSupplierId = null;
+        $this->resetValidation(['cancelReason', 'cancelConfirmation', 'cancelSupplierId']);
     }
 
     public function cancelBySupplier(OrderStatusService $service): void
@@ -274,21 +282,95 @@ trait GestionaAvanceSeguimiento
         abort_unless(auth()->user()?->can('supplier_cancellation.register'), 403);
 
         $this->validate([
+            'cancelSupplierId' => ['nullable', 'integer', 'exists:entities,id'],
             'cancelReason' => ['required', 'string', 'min:10', 'max:1000'],
+            'cancelConfirmation' => ['accepted'],
         ], [
             'cancelReason.required' => 'Indica el motivo de la cancelación.',
             'cancelReason.min' => 'Explica el motivo con al menos 10 caracteres.',
+            'cancelConfirmation.accepted' => 'Debes confirmar la cancelación para proceder.',
         ]);
 
         $item = OrderStatusItem::findOrFail($this->selectedItemId);
+
+        if ($this->cancelSupplierId && (int) $item->supplier_id !== (int) $this->cancelSupplierId) {
+            $item->supplier_id = $this->cancelSupplierId;
+            $item->save();
+        }
+
         $reason = $this->cancelReason;
         $service->cancelBySupplier($item, $reason, auth()->user());
         $this->closeSupplierCancellation();
         $this->refreshStatus('Partida cancelada por proveedor.', true);
-        $this->replacementReason = $item->part_number
-            ? "Reemplazar partida {$item->part_number}: {$reason}"
-            : $reason;
-        $this->showReplacementForm = true;
+        $this->showReplacementForm = false;
+    }
+
+    public function requestFullOrderCancellation(): void
+    {
+        abort_unless(auth()->user()?->can('order_status.manage') || auth()->user()?->can('supplier_cancellation.register'), 403);
+
+        if ($this->orderStatus->administrative_status === 'cancelado_total' || $this->orderStatus->saleOrder?->status === 'cancelado') {
+            throw ValidationException::withMessages(['order' => 'Esta orden ya se encuentra cancelada en su totalidad.']);
+        }
+
+        $this->fullOrderCancelReason = '';
+        $this->fullOrderCancelConfirmation = false;
+        $this->showFullOrderCancelConfirmation = true;
+    }
+
+    public function closeFullOrderCancellation(): void
+    {
+        $this->showFullOrderCancelConfirmation = false;
+        $this->fullOrderCancelReason = '';
+        $this->fullOrderCancelConfirmation = false;
+        $this->resetValidation(['fullOrderCancelReason', 'fullOrderCancelConfirmation']);
+    }
+
+    public function cancelFullOrder(OrderStatusService $service): void
+    {
+        abort_unless(auth()->user()?->can('order_status.manage') || auth()->user()?->can('supplier_cancellation.register'), 403);
+
+        $this->validate([
+            'fullOrderCancelReason' => ['required', 'string', 'min:10', 'max:1000'],
+            'fullOrderCancelConfirmation' => ['accepted'],
+        ], [
+            'fullOrderCancelReason.required' => 'Indica el motivo de cancelación de la orden.',
+            'fullOrderCancelReason.min' => 'Explica el motivo con al menos 10 caracteres.',
+            'fullOrderCancelConfirmation.accepted' => 'Debes confirmar la cancelación de la orden completa para proceder.',
+        ]);
+
+        $reason = $this->fullOrderCancelReason;
+        $user = auth()->user();
+
+        DB::transaction(function () use ($service, $reason, $user) {
+            $this->orderStatus->loadMissing('items');
+
+            foreach ($this->orderStatus->items as $item) {
+                if (! in_array($item->status, [OrderStatusService::STATUS_DELIVERED, OrderStatusService::STATUS_CLOSED, OrderStatusService::STATUS_CANCELLED_SUPPLIER], true)) {
+                    $service->cancelBySupplier($item, $reason, $user);
+                }
+            }
+
+            if ($this->orderStatus->saleOrder) {
+                $this->orderStatus->saleOrder->update(['status' => 'cancelado']);
+            }
+
+            $service->recordEvent(
+                $this->orderStatus,
+                null,
+                'order.cancelled_total',
+                OrderStatusService::PHASE_PURCHASE,
+                $this->orderStatus->administrative_status,
+                'cancelado_total',
+                "Orden cancelada en su totalidad: {$reason}",
+                $user
+            );
+
+            $service->recalculate($this->orderStatus);
+        });
+
+        $this->closeFullOrderCancellation();
+        $this->refreshStatus('Orden completa cancelada exitosamente.', true);
     }
 
     public function requestReplacement(OrderStatusService $service): void

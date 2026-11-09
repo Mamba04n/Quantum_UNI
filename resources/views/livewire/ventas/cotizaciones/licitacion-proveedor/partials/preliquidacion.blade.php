@@ -4,16 +4,6 @@
 @endphp
 <section aria-label="Preliquidación" class="preliq-sheet" x-data="{ trackEdit(event) { if ([...event.target.attributes].some(a => a.name.startsWith('wire:model') &amp;&amp; /^(preliquidation\.|supplierBidItems\.|supplierBidExtraItems\.|supplierItemProformas\.)/.test(a.value))) detailsDirty = true } }" x-on:keydown.enter="if ($event.target.matches('input:not([type=file])')) { $event.preventDefault(); const inputs = [...$el.querySelectorAll('input:not([type=file]):not(:disabled), select:not(:disabled)')].filter(el => el.getClientRects().length); inputs[inputs.indexOf($event.target) + 1]?.focus(); }" x-on:focusin="if ($event.target.matches('input[type=number]')) $event.target.select()" x-on:input="trackEdit($event)" x-on:change="trackEdit($event)">
     <div class="preliq-config">
-        <div class="preliq-supplier">
-            <span>Proveedor</span>
-            <div class="flex items-center gap-2">
-                <strong>{{ $selectedRfqDocument?->supplier?->name ?: 'Sin establecer' }}</strong>
-                <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold {{ ($preliquidation['transport'] ?? 'air') === 'sea' ? 'bg-cyan-100 text-cyan-800 border border-cyan-200' : 'bg-sky-100 text-sky-800 border border-sky-200' }}">
-                    {{ ($preliquidation['transport'] ?? 'air') === 'sea' ? '🚢 Marítimo' : '✈️ Aéreo' }}
-                </span>
-                <button type="button" x-on:click="editingSupplier = !editingSupplier" class="rounded px-2 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900">Cambiar</button>
-            </div>
-        </div>
         <label class="text-sm font-medium text-gray-700">Transporte
             <select wire:model.live="preliquidation.transport" class="{{ $control }}">
                 <option value="air">✈️ Aéreo</option>
@@ -92,11 +82,11 @@
             <dl>
             @foreach(['exw' => 'Costo EXW', 'ddp' => 'Costo DDP', 'sales' => 'Precio de venta', 'gross_profit' => 'Utilidad bruta', 'net_profit' => 'Utilidad neta'] as $field => $label)
                 <div class="{{ in_array($field, ['sales', 'net_profit']) ? 'preliq-result-positive' : '' }}">
-                    <dt>{{ $label }} <span tabindex="0" role="img" aria-label="{{ $field === 'sales' ? 'DDP dividido entre uno menos el margen' : ($field === 'net_profit' ? 'Precio de venta menos costo DDP' : ($field === 'gross_profit' ? 'Precio de venta menos costo EXW' : ($field === 'ddp' ? 'CIF más impuestos, comisiones, desaduanaje y transporte' : 'Precio unitario por cantidad'))) }}" title="{{ $field === 'sales' ? 'DDP / (1 - margen)' : ($field === 'net_profit' ? 'Venta - DDP' : ($field === 'gross_profit' ? 'Venta - EXW' : ($field === 'ddp' ? 'CIF + impuestos + comisiones + gastos de importación' : 'Precio unitario x cantidad'))) }}">&#9432;</span></dt>
+                    <dt>{{ $label }} <span tabindex="0" role="img" aria-label="{{ $field === 'sales' ? 'Precio final del cliente por cantidad; sin precio manual, se aplica el margen' : ($field === 'net_profit' ? 'Precio de venta menos costo DDP' : ($field === 'gross_profit' ? 'Precio de venta menos costo EXW' : ($field === 'ddp' ? 'CIF más impuestos, comisiones, desaduanaje y transporte' : 'Precio unitario por cantidad'))) }}" title="{{ $field === 'sales' ? 'Precio final por cantidad; sin precio manual: DDP / (1 - margen)' : ($field === 'net_profit' ? 'Venta - DDP' : ($field === 'gross_profit' ? 'Venta - EXW' : ($field === 'ddp' ? 'CIF + impuestos + comisiones + gastos de importación' : 'Precio unitario x cantidad'))) }}">&#9432;</span></dt>
                     <dd>$ {{ number_format($totals[$field], 2) }}<small>C$ {{ number_format($totals['nio'][$field], 2) }}</small></dd>
                 </div>
             @endforeach
-                <div><dt>Margen neto</dt><dd>{{ number_format((float) ($preliquidation['margin'] ?? 30), 2) }} %<small>Bruto: {{ number_format($totals['gross_margin'], 2) }} %</small></dd></div>
+                <div><dt>Margen neto</dt><dd>{{ number_format($totals['net_margin'], 2) }} %<small>Bruto: {{ number_format($totals['gross_margin'], 2) }} %</small></dd></div>
             </dl>
         </aside>
     </div>

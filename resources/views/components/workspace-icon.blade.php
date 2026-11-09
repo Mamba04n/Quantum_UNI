@@ -20,6 +20,7 @@
         'search' => 'M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z',
         'grid' => 'M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7Z',
         'clock' => 'M12 8v4l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+        'close' => 'M18 6 6 18M6 6l12 12',
         'plus' => 'M12 5v14M5 12h14',
     ];
 @endphp

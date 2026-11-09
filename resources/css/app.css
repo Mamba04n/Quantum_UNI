@@ -5,26 +5,76 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Corporate interaction state, shared by administrative actions and navigation. */
+:root {
+    --brand-red: #b50e0e;
+    --brand-red-hover: #9a0101;
+    --brand-red-light: #fef2f2;
+    --brand-red-dark: #800707;
+}
+
+/* Corporate interaction state aligned with Quantum brand red (#b50e0e / #9a0101) */
 @media (hover: hover) {
-    .quantum-ui :is(button, a[href], [role="button"], summary, input[type="submit"], input[type="button"], label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):hover {
-        background-color: #6f1220 !important;
-        border-color: #6f1220 !important;
+    .quantum-ui :is(button, a[href], [role="button"], summary, input[type="submit"], input[type="button"], label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):not(.no-corporate-hover):not(.erp-nav-link):not([data-danger="true"]):not([class*="danger"]):not([class*="rose"]):not([class*="emerald"]):not([class*="teal"]):hover {
+        background-color: #9a0101 !important;
+        border-color: #9a0101 !important;
         color: #fff !important;
     }
-    .quantum-ui :is(button, a[href], [role="button"], summary, label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):hover :is(span, div, article, svg, p, h1, h2, h3, h4, h5, h6, strong, b, small, em, i) {
+    .quantum-ui :is(button, a[href], [role="button"], summary, label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):not(.no-corporate-hover):not(.erp-nav-link):not([data-danger="true"]):not([class*="danger"]):not([class*="rose"]):not([class*="emerald"]):not([class*="teal"]):hover :is(span, div, article, svg, p, h1, h2, h3, h4, h5, h6, strong, b, small, em, i) {
         color: #fff !important;
     }
-    /* Icon tiles and nested cards must share the dark hover surface: white
-       icons on their original pale background otherwise disappear. */
-    .quantum-ui :is(button, a[href], [role="button"], summary, label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):hover :is(span, div, article, i) {
+    .quantum-ui :is(button, a[href], [role="button"], summary, label:has(input[type="file"])):not(.inset-0):not(:disabled):not([aria-disabled="true"]):not(:has(input:disabled)):not(.no-corporate-hover):not(.erp-nav-link):not([data-danger="true"]):hover :is(span, div, article, i) {
         background-color: transparent !important;
         background-image: none !important;
     }
 }
+
 .quantum-ui :is(button, a[href], [role="button"], summary):focus-visible {
-    outline: 2px solid #6f1220;
+    outline: 2px solid #b50e0e;
     outline-offset: 3px;
+}
+
+/* Primary actions and buttons across ERP styled with Portal Red (#b50e0e) */
+:is(button, a.inline-flex, a.flex, input[type="submit"]):is(.bg-slate-800, .bg-slate-900, .bg-slate-950, .bg-indigo-600, .bg-blue-600):not([class*="danger"]):not([class*="rose"]):not([class*="red-"]):not([data-danger="true"]) {
+    background-color: #b50e0e !important;
+    border-color: #b50e0e !important;
+    color: #ffffff !important;
+}
+
+:is(button, a.inline-flex, a.flex, input[type="submit"]):is(.bg-slate-800, .bg-slate-900, .bg-slate-950, .bg-indigo-600, .bg-blue-600):not([class*="danger"]):not([class*="rose"]):not([class*="red-"]):not([data-danger="true"]):hover {
+    background-color: #9a0101 !important;
+    border-color: #9a0101 !important;
+    color: #ffffff !important;
+}
+
+/* Active navigation indicators, tabs, and focus rings */
+.erp-nav-link.is-active,
+.erp-tab-active {
+    background-color: #fef2f2 !important;
+    color: #b50e0e !important;
+}
+
+/* Input focus states with portal red glow */
+input:focus:not([type="checkbox"]):not([type="radio"]),
+select:focus,
+textarea:focus {
+    border-color: #b50e0e !important;
+    --tw-ring-color: rgba(181, 14, 14, 0.2) !important;
+    --tw-ring-opacity: 1 !important;
+}
+
+/* Checkboxes and radio controls with portal brand red */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: #b50e0e !important;
+    border-color: #b50e0e !important;
+}
+
+/* Interactive link accents (excluding danger/cancel links) */
+a.text-indigo-600, a.text-blue-600 {
+    color: #b50e0e !important;
+}
+a.text-indigo-600:hover, a.text-blue-600:hover {
+    color: #9a0101 !important;
 }
 
 @media (max-width: 639px) {
@@ -44,13 +94,14 @@
 
 @layer base {
     body {
-        background: #f8fafc;
+        background: #f7f7f8;
+        color: #1e1e1e;
     }
 }
 
 @layer components {
     .erp-page {
-        @apply min-h-screen bg-slate-50 px-4 py-5 font-sans text-slate-900 sm:px-6 lg:px-7;
+        @apply min-h-screen bg-[#f7f7f8] px-4 py-5 font-sans text-[#1e1e1e] sm:px-6 lg:px-7;
     }
 
     .erp-shell {
@@ -58,27 +109,27 @@
     }
 
     .erp-page-header {
-        @apply mb-7 border-b border-slate-200/70 pb-5;
+        @apply mb-7 border-b border-[#e8e8e9] pb-5;
     }
 
     .erp-kicker {
-        @apply text-[10px] font-black uppercase tracking-[0.22em] text-red-700;
+        @apply text-[10px] font-black uppercase tracking-[0.22em] text-[#b50e0e];
     }
 
     .erp-title {
-        @apply mt-1 text-2xl font-black tracking-tight text-slate-950 md:text-[2rem];
+        @apply mt-1 text-2xl font-black tracking-tight text-[#1e1e1e] md:text-[2rem];
     }
 
     .erp-subtitle {
-        @apply mt-1 max-w-3xl text-xs font-semibold leading-5 text-slate-500;
+        @apply mt-1 max-w-3xl text-xs font-semibold leading-5 text-gray-500;
     }
 
     .erp-card {
-        @apply overflow-hidden rounded-xl border border-slate-200/70 bg-white/80 shadow-sm backdrop-blur;
+        @apply overflow-hidden rounded-2xl border border-[#e8e8e9] bg-white shadow-sm;
     }
 
     .erp-card-header {
-        @apply border-b border-slate-200/70 bg-white/60 px-5 py-4;
+        @apply border-b border-[#e8e8e9] bg-white px-5 py-4;
     }
 
     .erp-open-panel {
@@ -86,7 +137,7 @@
     }
 
     .erp-section {
-        @apply border-t border-slate-200/70 pt-5 first:border-t-0 first:pt-0;
+        @apply border-t border-[#e8e8e9] pt-5 first:border-t-0 first:pt-0;
     }
 
     .erp-section-header {
@@ -94,50 +145,50 @@
     }
 
     .erp-section-title {
-        @apply text-sm font-black tracking-tight text-slate-950;
+        @apply text-sm font-black tracking-tight text-[#1e1e1e];
     }
 
     .erp-section-help {
-        @apply mt-1 text-xs font-medium leading-5 text-slate-500;
+        @apply mt-1 text-xs font-medium leading-5 text-gray-500;
     }
 
     .erp-chip {
-        @apply inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-600;
+        @apply inline-flex items-center rounded-lg bg-gray-100 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-gray-600;
     }
 
     .erp-chip-dark {
-        @apply inline-flex items-center rounded-md bg-slate-950 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white;
+        @apply inline-flex items-center rounded-lg bg-[#1e1e1e] px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white;
     }
 
     .erp-chip-red {
-        @apply inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-red-700;
+        @apply inline-flex items-center rounded-lg bg-rose-50 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-[#b50e0e];
     }
 
     .erp-button-primary {
-        @apply inline-flex items-center justify-center rounded-lg bg-slate-950 px-4 py-2.5 text-xs font-black text-white transition hover:bg-black focus:outline-none focus:ring-2 focus:ring-slate-300;
+        @apply inline-flex items-center justify-center rounded-xl bg-[#b50e0e] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#9a0101] focus:outline-none focus:ring-2 focus:ring-[#b50e0e]/20 shadow-sm;
     }
 
     .erp-button-danger {
-        @apply inline-flex items-center justify-center rounded-lg bg-red-700 px-4 py-2.5 text-xs font-black text-white transition hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-200;
+        @apply inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200;
     }
 
     .erp-button-secondary {
-        @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/70 px-4 py-2.5 text-xs font-black text-slate-700 transition hover:border-slate-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200;
+        @apply inline-flex items-center justify-center rounded-xl border border-[#e8e8e9] bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200;
     }
 
     .erp-table-wrap {
-        @apply overflow-hidden border-y border-slate-200/80 bg-white/60;
+        @apply overflow-hidden rounded-2xl border border-[#e8e8e9] bg-white shadow-sm;
     }
 
     .erp-table {
-        @apply w-full text-left text-[11px];
+        @apply w-full text-left text-xs text-[#1e1e1e];
     }
 
     .erp-table thead {
-        @apply border-b border-slate-200 bg-slate-50/90 text-[9px] font-black uppercase tracking-[0.16em] text-slate-500;
+        @apply border-b border-[#e8e8e9] bg-gray-50/80 text-[10px] font-bold uppercase tracking-wider text-gray-500;
     }
 
     .erp-table tbody {
-        @apply divide-y divide-slate-100 bg-white;
+        @apply divide-y divide-[#e8e8e9]/70 bg-white;
     }
 }

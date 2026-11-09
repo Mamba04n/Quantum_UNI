@@ -18,7 +18,8 @@ class AuthenticateIntegration
 {
     public function handle(Request $request, Closure $next, string $ability): Response
     {
-        $requestId = (string) Str::uuid();
+        $providedReqId = $request->header('X-Request-ID');
+        $requestId = is_string($providedReqId) && filled($providedReqId) ? $providedReqId : (string) Str::uuid();
         $provided = $request->header('X-Correlation-ID');
         $correlationId = is_string($provided) && Str::isUuid($provided) ? $provided : $requestId;
         $request->attributes->set('integration.request_id', $requestId);
@@ -37,32 +38,45 @@ class AuthenticateIntegration
             } elseif (in_array('*', $token->abilities, true) || ! in_array($ability, $token->abilities, true)) {
                 $response = $this->error(403, 'integration.forbidden', 'La credencial no permite esta operación.');
             } else {
-                $key = 'integration:client:'.$client->id;
-                if (RateLimiter::tooManyAttempts($key, 60)) {
-                    $response = $this->error(429, 'integration.rate_limited', 'Límite temporal de solicitudes.');
-                    $response->headers->set('Retry-After', (string) RateLimiter::availableIn($key));
+                $isWrite = ! $request->isMethodSafe();
+                $rateKey = $isWrite ? 'integration:client:'.$client->id.':write' : 'integration:client:'.$client->id;
+                $rateLimit = $isWrite ? 20 : 60;
+
+                if (RateLimiter::tooManyAttempts($rateKey, $rateLimit)) {
+                    $response = $this->error(429, 'integration.rate_limited', 'Límite temporal de solicitudes superado.');
+                    $response->headers->set('Retry-After', (string) RateLimiter::availableIn($rateKey));
                 } else {
                     $request->attributes->set('integration.client_id', $client->id);
-                    RateLimiter::hit($key, 60);
+                    RateLimiter::hit($rateKey, 60);
                     $token->forceFill(['last_used_at' => now()])->save();
                     $response = $next($request);
-                    // Laravel's routing pipeline may render controller exceptions
-                    // before returning to this middleware. Normalize those too.
                     if ($response->getStatusCode() >= 500) {
                         $response = $this->error(503, 'integration.unavailable', 'Integración temporalmente no disponible.');
                     }
                 }
             }
             $status = $response->getStatusCode();
-        } catch (ValidationException) {
+        } catch (ValidationException $ve) {
             $status = 422;
-            $response = $this->error(422, 'integration.invalid_request', 'Parámetros de integración inválidos.');
+            $response = response()->json([
+                'error' => [
+                    'code' => 'integration.invalid_request',
+                    'message' => 'Parámetros de integración inválidos.',
+                    'details' => $ve->errors(),
+                ],
+            ], 422);
         } catch (HttpExceptionInterface $e) {
             $status = $e->getStatusCode();
-            $response = $this->error($status, $status === 422 ? 'integration.invalid_request' : 'integration.not_found', $status === 422 ? 'Parámetros de integración inválidos.' : 'Recurso no disponible.');
+            $code = match ($status) {
+                404 => 'integration.not_found',
+                409 => 'integration.conflict',
+                422 => 'integration.invalid_request',
+                default => 'integration.error',
+            };
+            $response = $this->error($status, $code, $e->getMessage() ?: 'Recurso no disponible.');
         } catch (\Throwable $e) {
             $status = 503;
-            logger()->error('integration.request_failed', ['exception_type' => $e::class, 'request_id' => $requestId]);
+            logger()->error('integration.request_failed', ['exception_type' => $e::class, 'request_id' => $requestId, 'message' => $e->getMessage()]);
             $response = $this->error(503, 'integration.unavailable', 'Integración temporalmente no disponible.');
         } finally {
             try {

@@ -1,4 +1,4 @@
-name: Entrega 2 académica
+name: Entrega final académica
 on: [push, pull_request]
 permissions:
   contents: read
@@ -24,4 +24,4 @@ jobs:
           coverage: none
       - run: composer install --prefer-dist --no-interaction --no-progress
       - run: cp .env.testing.example .env.testing
-      - run: php artisan test --filter='AcademicInstallationTest|AcademicDeliveryEvidenceTest|DirectInventorySaleTest|DispatchAuthorizationManagerTest|KardexViewerTest|PurchasePreparationApprovedOfferTest|CustomerResourceIdorTest|LoginRateLimitTest|DashboardMetricsTest|test_openapi_document_covers_every_public_finance_path|StandalonePhpScriptGuardTest'
+      - run: php artisan test --filter='AcademicInstallationTest|AcademicDeliveryEvidenceTest|DirectInventorySaleTest|DispatchAuthorizationManagerTest|KardexViewerTest|PurchasePreparationApprovedOfferTest|CustomerResourceIdorTest|LoginRateLimitTest|DashboardMetricsTest|WorkspaceNavigationTest|test_openapi_document_covers_every_public_finance_path|StandalonePhpScriptGuardTest'

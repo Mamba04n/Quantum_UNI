@@ -295,7 +295,7 @@ class FinanceApiTest extends TestCase
 
     public function test_openapi_document_covers_every_public_finance_path(): void
     {
-        $contract = file_get_contents(base_path('tests/Fixtures/contracts/openapi-finance-v1.yaml'));
+        $contract = file_get_contents(base_path('docs/openapi-finance-v1.yaml'));
         $this->assertIsString($contract);
 
         foreach ([

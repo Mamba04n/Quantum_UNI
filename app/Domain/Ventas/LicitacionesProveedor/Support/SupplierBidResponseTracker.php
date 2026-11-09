@@ -17,9 +17,9 @@ class SupplierBidResponseTracker
     ) {
     }
 
-    public function trackerFor(QuotationRequest $request): mixed
+    public function trackerFor(QuotationRequest $request, bool $withRelations = true): mixed
     {
-        return $this->trackerService->trackerForQuotation($request);
+        return $this->trackerService->trackerForQuotation($request, $withRelations);
     }
 
     public function attachDocuments(mixed $tracker, SupplierBidResponse $response, Entity $supplier, QuotationRequest $request, array $attachments, bool $logGlobal = false): void

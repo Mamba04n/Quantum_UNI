@@ -1,4 +1,4 @@
-# Quantum UNI
+# Quantum UNI — Entrega final
 
 **ERP comercial para la gestión de refacciones, compras, inventario y ventas.**
 
@@ -10,6 +10,10 @@
 Quantum UNI integra el ciclo comercial de una empresa revendedora de repuestos: desde el requerimiento del cliente y la evaluación de proveedores hasta la recepción, el control de existencias, la venta y su seguimiento financiero.
 
 Es una versión académica de QuantumComplete orientada al estudio de procesos empresariales, integridad transaccional y pruebas de software. Incluye un caso sintético reproducible para recorrer el flujo de compra, recepción y venta utilizando los servicios del ERP.
+
+## Alcance académico
+
+Entrega de Ingeniería de Software I conforme al [documento final](docs/Entrega_Final_Tecnica.docx). Consulta [alcance y módulos ocultos](ALCANCE_ENTREGA.md). PayPal, la pasarela independiente y los enlaces de pago se conservan en código pero se ocultan en la presentación. Los abonos internos siguen disponibles.
 
 ## Funcionalidades
 
@@ -179,7 +183,7 @@ Para ejecutar toda la suite de PHP:
 php artisan test
 ```
 
-La [integración continua](.github/workflows/entrega-2.yml) ejecuta una selección de pruebas sobre MySQL: instalación académica, conciliación de documentos e inventario, ventas, autorización, indicadores y controles de acceso. Esa selección se verificó localmente con **28 pruebas aprobadas y 183 aserciones**; el badge superior muestra el estado de GitHub Actions.
+La [integración continua](.github/workflows/entrega-2.yml) ejecuta una selección de pruebas sobre MySQL: instalación académica, conciliación de documentos e inventario, ventas, autorización, indicadores y controles de acceso. Consulta `VALIDACION_ENTREGA.json` para las verificaciones de esta versión y el badge para el estado de GitHub Actions.
 
 Las pruebas de navegador están en `tests/e2e` y utilizan Playwright. Su preparación es independiente del piloto mínimo: requieren navegador, servidor y los datos de prueba correspondientes. La selección de CI anterior no ejecuta esa suite de navegador.
 
@@ -194,3 +198,7 @@ Las pruebas de navegador están en `tests/e2e` y utilizan Playwright. Su prepara
 Las integraciones externas, como PayPal, requieren configuración y credenciales propias. No son necesarias para ejecutar el piloto académico.
 
 Mantén fuera del repositorio `.env`, credenciales, respaldos, sesiones y documentos generados con datos privados. Un despliegue productivo requiere revisar permisos, configurar HTTPS, desactivar `APP_DEBUG` y validar respaldo y restauración.
+
+## ZIP de entrega final
+
+Descarga el ZIP en [Releases](https://github.com/Mamba04n/Quantum_UNI/releases/tag/entrega-final-2026-11-09). Incluye el frontend compilado; ejecuta `Instalar-Local.ps1 -SoloConfig`, revisa MySQL en `.env` y despu?s `Instalar-Local.ps1`. La clave académica se genera localmente.

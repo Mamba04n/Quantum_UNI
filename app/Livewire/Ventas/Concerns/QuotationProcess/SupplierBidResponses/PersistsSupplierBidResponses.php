@@ -40,7 +40,9 @@ trait PersistsSupplierBidResponses
         ]);
         $rows = $this->supplierBidItems + $this->supplierBidExtraItems;
         $trackerService = app(OrderTrackerService::class);
-        $tracker = $trackerService->trackerForQuotation($quote);
+        $tracker = ($this->supplierProformas || $this->supplierItemProformas)
+            ? $trackerService->trackerForQuotation($quote, false)
+            : null;
         if (!$tracker && ($this->supplierProformas || $this->supplierItemProformas)) {
             throw ValidationException::withMessages(['preliquidation' => 'No existe seguimiento para adjuntar archivos.']);
         }
@@ -73,6 +75,8 @@ trait PersistsSupplierBidResponses
         }
         $this->supplierProformas = $this->supplierItemProformas = [];
         $this->loadSavedSupplierResponse($response->fresh());
+        $this->advanceStageError = null;
+        $this->dispatch('preliquidation-saved');
         $viaTransport = ($this->preliquidation['transport'] ?? 'air') === 'sea' ? 'Vía Marítima 🚢' : 'Vía Aérea ✈️';
         $this->dispatch('notify', ['type' => 'success', 'message' => "Preliquidación guardada ({$viaTransport}): ".count($mapping).' partidas.']);
     }
@@ -696,8 +700,14 @@ trait PersistsSupplierBidResponses
             $this->responseSupplierName = '';
             $this->supplierContactName = (string) ($supplier->contact_name ?? '');
 
+            $this->resetErrorBag('responseSupplierName');
+            $this->resetErrorBag('selectedSupplierId');
+            $this->dispatch('rfq-supplier-established');
             $this->dispatch('notify', ['type' => 'success', 'message' => 'Proveedor fijado para este RFQ. Ya puedes registrar la cotizacion.']);
         } catch (ValidationException $e) {
+            foreach ($e->errors() as $field => $messages) {
+                $this->addError($field, $messages[0]);
+            }
             $this->dispatch('notify', ['type' => 'error', 'message' => collect($e->errors())->flatten()->first()]);
         }
     }

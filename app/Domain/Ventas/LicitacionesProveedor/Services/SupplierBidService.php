@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ventas\LicitacionesProveedor\Services;
 
+use App\Domain\Ventas\LicitacionesProveedor\Support\SupplierBidResponseRepository;
 use App\Models\ActivityLog;
 use App\Models\Entity;
 use App\Models\QuotationRequest;
@@ -38,16 +39,7 @@ class SupplierBidService
             $supplier = Entity::where('type', 'proveedor')->findOrFail($data['supplier_id']);
             $this->validateResponseItems($request, $data['items'] ?? []);
 
-            $bid = SupplierBid::firstOrCreate(
-                [
-                    'quotation_request_id' => $request->id,
-                    'supplier_id' => $supplier->id,
-                ],
-                [
-                    'reference' => $this->nextReference($request),
-                    'created_by' => $user->id,
-                ]
-            );
+            $bid = app(SupplierBidResponseRepository::class)->bidForSupplier($request, $supplier, $user);
 
             $proformaPath = $proforma ? $proforma->store('supplier-proformas', 'private') : $bid->proforma_path;
 
@@ -386,13 +378,6 @@ class SupplierBidService
                 throw ValidationException::withMessages(["supplierBidItems.{$item->id}.unit_cost" => 'Ingresa precio proveedor o marca la partida como No cotizado.']);
             }
         }
-    }
-
-    private function nextReference(QuotationRequest $request): string
-    {
-        $count = SupplierBid::where('quotation_request_id', $request->id)->count() + 1;
-
-        return 'SB-'.$request->reference.'-'.str_pad((string) $count, 2, '0', STR_PAD_LEFT);
     }
 
     private function lineLabel(QuotationRequestItem $item): string

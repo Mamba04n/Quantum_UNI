@@ -31,7 +31,9 @@
     $customerPhone = $entity->phone_mobile ?? ($entity->whatsapp ?? ($entity->phone_home ?? ''));
     $customerAddress = $request->consignee_address ?: ($entity->address ?? 'Managua, Nicaragua');
     $notes = trim((string) ($request->offer_notes ?? ''));
-    $warrantyText = $warranty ?: 'Garantía según especificaciones del fabricante.';
+    $warrantyText = collect($mappedItems)->contains(fn ($item) => array_key_exists('warranty_label', $item))
+        ? 'Según lo indicado en cada partida.'
+        : ($warranty ?: 'Garantía según especificaciones del fabricante.');
 
     // Iconos vectoriales minimalistas
     $iconPin = '<svg width="9" height="9" viewBox="0 0 24 24" fill="#991B1B" style="vertical-align: -1px; margin-right: 4px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>';
@@ -260,11 +262,12 @@
         <thead>
             <tr>
                 <th style="width: 5%;" class="center">Ítem</th>
-                <th style="width: 18%;">Código / Referencia</th>
-                <th style="width: 41%;">Descripción del Producto / Servicio</th>
-                <th style="width: 8%;" class="center">Cant.</th>
-                <th style="width: 13%;" class="right">Precio Unitario</th>
-                <th style="width: 15%;" class="right">Subtotal</th>
+                <th style="width: 15%;">Código / Referencia</th>
+                <th style="width: 33%;">Descripción del Producto / Servicio</th>
+                <th style="width: 10%;" class="center">Garantía</th>
+                <th style="width: 7%;" class="center">Cant.</th>
+                <th style="width: 14%;" class="right">Precio Unitario</th>
+                <th style="width: 16%;" class="right">Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -279,6 +282,16 @@
                         @endif
                         @if(($item['brand'] ?? '-') !== '-')
                             <div style="font-size: 7px; color: #991B1B; font-weight: bold; margin-top: 1px;">Marca: {{ $item['brand'] }}</div>
+                        @endif
+                    </td>
+                    <td class="center" style="vertical-align: middle; text-align: center;">
+                        @if(!empty($item['warranty_type']) && !in_array(strtoupper(trim((string)$item['warranty_type'])), ['', 'NONE', 'NINGUNA', 'SIN GARANTÍA'], true))
+                            <div style="display: inline-block; background: {{ $item['warranty_badge_bg'] ?? '#f1f5f9' }}; color: {{ $item['warranty_badge_text'] ?? '#ffffff' }}; font-weight: bold; font-size: 8px; padding: 2.5px 7px; border-radius: 3px; text-align: center;">{{ $item['warranty_code'] }}</div>
+                            @if(!empty($item['has_warranty_extension']))
+                                <div style="font-size: 6.5px; color: #7c3aed; font-weight: bold; margin-top: 1.5px; text-align: center;">+50% Plus</div>
+                            @endif
+                        @else
+                            <span style="color: #94a3b8; font-size: 8px;">—</span>
                         @endif
                     </td>
                     <td class="center bold">{{ number_format((float) ($item['quantity'] ?? 1), 0) }}</td>

@@ -53,6 +53,16 @@ class PreliquidationCalculator
             $cif = $cost + ($handlingRate + $freightRate) * $unitWeight;
             $ddp = $cif * (1 + $rate) + ((float) $s['customs'] + (float) $s['local_transport']) * $share;
             $price = $factor > 0 ? $ddp / $factor : 0;
+            $suggestedPrice = $price;
+            $exchange = (float) $s['exchange'];
+            $assignedUsd = max(0, (float) ($item['assigned_usd'] ?? 0));
+            $assignedNio = max(0, (float) ($item['assigned_nio'] ?? 0));
+            if ($assignedUsd > 0) {
+                $price = $assignedUsd;
+            } elseif ($assignedNio > 0 && $exchange > 0) {
+                $price = $assignedNio / $exchange;
+            }
+            $priceNio = $assignedUsd <= 0 && $assignedNio > 0 ? $assignedNio : $price * $exchange;
             $rows[$key] = ['cif' => $cif, 'ddp' => $ddp, 'price' => $price, 'total' => $price * $qty];
             $issues = [];
             if (trim((string) ($item['quoted_part_number'] ?? '')) === '') $issues[] = 'Sin Part Number';
@@ -61,11 +71,12 @@ class PreliquidationCalculator
             if ($qty <= 0) $issues[] = 'Falta cantidad';
             $rows[$key] += ['subtotal_exw' => $cost * $qty, 'total_weight' => $unitWeight * $qty,
                 'cif_nio' => $cif * (float) $s['exchange'], 'ddp_nio' => $ddp * (float) $s['exchange'],
-                'price_nio' => $price * (float) $s['exchange'], 'total_nio' => $price * $qty * (float) $s['exchange'],
-                'assigned_unit' => (float) ($item['assigned_usd'] ?? 0),
-                'assigned_total' => (float) ($item['assigned_usd'] ?? 0) * $qty,
-                'assigned_unit_nio' => (float) ($item['assigned_nio'] ?? 0),
-                'assigned_total_nio' => (float) ($item['assigned_nio'] ?? 0) * $qty,
+                'price_nio' => $priceNio, 'total_nio' => $priceNio * $qty,
+                'suggested_price' => $suggestedPrice,
+                'assigned_unit' => $assignedUsd > 0 || $assignedNio > 0 ? $price : 0,
+                'assigned_total' => $assignedUsd > 0 || $assignedNio > 0 ? $price * $qty : 0,
+                'assigned_unit_nio' => $assignedUsd > 0 || $assignedNio > 0 ? $priceNio : 0,
+                'assigned_total_nio' => $assignedUsd > 0 || $assignedNio > 0 ? $priceNio * $qty : 0,
                 'net_profit' => ($price - $ddp) * $qty, 'gross_profit' => ($price - $cost) * $qty,
                 'gross_margin' => $price > 0 ? (1 - $cost / $price) * 100 : 0,
                 'issues' => $issues,
@@ -93,6 +104,7 @@ class PreliquidationCalculator
             'divisor' => $factor, 'count' => count($rows),
             'complete' => count(array_filter($rows, fn ($row) => $row['issues'] === [])),
             'gross_margin' => $sales > 0 ? (1 - $exw / $sales) * 100 : 0,
+            'net_margin' => $sales > 0 ? (1 - $ddpTotal / $sales) * 100 : 0,
             'weight' => $weight, 'exw' => $exw, 'cif' => $base, 'cif_nio' => $base * (float) $s['exchange'], 'ddp' => $ddpTotal,
             'sales' => $sales, 'sales_nio' => $sales * (float) $s['exchange'],
             'gross_profit' => $sales - $exw, 'net_profit' => $sales - $ddpTotal];

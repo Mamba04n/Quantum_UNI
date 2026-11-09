@@ -12,8 +12,17 @@ class IdentityController extends Controller
     {
         return response()->json(['data' => [
             'application' => 'QuantumComplete',
-            'api_version' => '1.1',
+            'api_version' => '1.2',
             'resources' => ['capabilities', 'users', 'customers', 'assets', 'employees'],
+            'capabilities' => [
+                'items.read',
+                'stock.read',
+                'inventory.reserve',
+                'inventory.release',
+                'inventory.consume',
+                'purchase_requests.create',
+                'purchase_requests.read',
+            ],
             'authentication' => 'bearer',
         ]]);
     }

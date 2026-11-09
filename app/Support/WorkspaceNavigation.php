@@ -9,6 +9,9 @@ final class WorkspaceNavigation
 {
     public function allows(User $user, string $name): bool
     {
+        if (in_array($name, config('academic.hidden_modules', []), true)) {
+            return false;
+        }
         $route = Route::getRoutes()->getByName($name);
         if (! $route || ($name === 'dashboard' && ! $user->canAccess('dashboard'))) {
             return false;

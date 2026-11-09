@@ -31,6 +31,8 @@ class PreliquidationPersistenceTest extends TestCase
         foreach ($tables as $name => $columns) Schema::create($name, function (Blueprint $table) use ($columns) {
             $table->id(); foreach ($columns as $column) $table->text($column)->nullable(); $table->timestamps();
         });
+        Schema::table('quotation_requests', fn (Blueprint $table) => $table->unique('reference'));
+        Schema::table('supplier_bids', fn (Blueprint $table) => $table->unique('reference'));
         $this->mock(SupplierBidResponseTracker::class, function ($mock) {
             $mock->shouldReceive('markRequestPendingResponse')->andReturnNull();
             $mock->shouldReceive('trackerFor')->andReturnNull();
@@ -47,6 +49,104 @@ class PreliquidationPersistenceTest extends TestCase
     {
         return ['quoted_part_number' => '332/A2428', 'quoted_description' => 'SEAL DUST', 'quoted_quantity' => 2,
             'unit_cost' => 3.46, 'weight_lb' => .07, 'assigned_usd' => 10, 'assigned_nio' => 370];
+    }
+
+    public function test_save_action_clears_previous_advance_error_and_reloads_saved_rows_without_loading_tracker_history(): void
+    {
+        Schema::table('supplier_bid_responses', function (Blueprint $table) {
+            foreach (['contact_name', 'payment_terms', 'general_delivery_time', 'general_warranty', 'valid_until'] as $column) {
+                $table->text($column)->nullable();
+            }
+        });
+        DB::table('quotation_request_items')->insert(['id' => 11, 'quotation_request_id' => 1, 'part_number' => '332/A2428', 'quantity' => 2]);
+        $this->mock(\App\Services\OrderTrackerService::class, function ($mock) {
+            $mock->shouldNotReceive('trackerForQuotation');
+        });
+        $component = \Livewire\Livewire::test(PreliquidationSaveHarness::class)
+            ->set('preliquidation', PreliquidationCalculator::defaults())
+            ->set('preliquidation.exchange', 37)
+            ->set('supplierBidItems', [11 => $this->row() + ['item_status' => 'quoted']])
+            ->set('advanceStageError', 'Registra al menos una respuesta proveedor valida.')
+            ->call('saveAllSupplierResponseItems')
+            ->assertHasNoErrors()
+            ->assertSet('advanceStageError', null)
+            ->assertDispatched('preliquidation-saved');
+        $saved = SupplierBidResponseItem::sole();
+        $component->assertSet('supplierBidItems.11.response_item_id', $saved->id);
+        $this->assertEquals(11, $saved->quotation_request_item_id);
+        $this->assertTrue($saved->is_selectable);
+        $coverage = app(\App\Domain\Ventas\LicitacionesProveedor\Queries\MeasureSupplierBidCoverage::class)->execute(QuotationRequest::findOrFail(1));
+        $this->assertEquals(1, $coverage['responded']);
+    }
+
+    public function test_invalid_save_keeps_pending_data_and_does_not_report_success(): void
+    {
+        \Livewire\Livewire::test(PreliquidationSaveHarness::class)
+            ->set('preliquidation', PreliquidationCalculator::defaults())
+            ->set('preliquidation.exchange', 37)
+            ->set('supplierBidExtraItems', ['new_line' => array_replace($this->row(), ['quoted_description' => '', 'item_status' => 'quoted'])])
+            ->set('advanceStageError', 'Error anterior de avance')
+            ->call('saveAllSupplierResponseItems')
+            ->assertHasErrors('supplierBidExtraItems.new_line.quoted_description')
+            ->assertSet('supplierBidExtraItems.new_line.unit_cost', 3.46)
+            ->assertSet('advanceStageError', 'Error anterior de avance')
+            ->assertNotDispatched('preliquidation-saved');
+        $this->assertEquals(0, SupplierBidResponseItem::count());
+    }
+
+    public function test_save_survives_a_legacy_bid_label_from_a_renumbered_request_and_reuses_its_own_bid(): void
+    {
+        DB::table('quotation_requests')->insert(['id' => 2, 'reference' => 'SC-RENAMED', 'status' => QuotationRequest::STATUS_SUPPLIER_RESPONSE_PENDING]);
+        DB::table('supplier_bids')->insert(['quotation_request_id' => 2, 'supplier_id' => 1, 'reference' => 'BID-SC-TEST-001']);
+        [$response, $mapping] = $this->save(1, ['line' => $this->row()]);
+        $firstBid = $response->supplier_bid_id;
+        $this->assertNotNull($firstBid);
+        $this->assertEquals('BID-SC-TEST-Q1-S1', \App\Models\SupplierBid::findOrFail($firstBid)->reference);
+        $this->save(1, ['line' => $this->row() + ['response_item_id' => $mapping['line']]], $response, SaveSupplierPreliquidation::revision($response->fresh()));
+        $this->assertEquals($firstBid, $response->fresh()->supplier_bid_id);
+        $this->assertEquals(2, \App\Models\SupplierBid::count());
+    }
+
+    public function test_legacy_bid_entry_and_preliquidation_share_one_bid_even_after_renumbering(): void
+    {
+        Schema::table('supplier_bids', function (Blueprint $table) {
+            foreach (['exchange_rate', 'payment_terms', 'delivery_time', 'warranty', 'valid_until', 'proforma_path', 'notes'] as $column) $table->text($column)->nullable();
+        });
+        Schema::create('supplier_bid_items', function (Blueprint $table) {
+            $table->id();
+            foreach (['supplier_bid_id', 'quotation_request_item_id', 'quantity', 'unit_cost', 'line_total', 'currency', 'is_quoted', 'delivery_time', 'estimated_arrival_date', 'part_model', 'serial_number', 'brand', 'warranty', 'notes'] as $column) $table->text($column)->nullable();
+            $table->timestamps();
+        });
+        DB::table('quotation_request_items')->insert(['id' => 11, 'quotation_request_id' => 1, 'part_number' => 'PART', 'quantity' => 2]);
+        DB::table('supplier_bids')->insert(['quotation_request_id' => 2, 'supplier_id' => 2, 'reference' => 'SB-SC-TEST-01']);
+        $tracker = \Mockery::mock(\App\Models\OrderTracker::class)->makePartial();
+        $tracker->shouldReceive('update')->andReturn(true);
+        $this->mock(\App\Services\OrderTrackerService::class, function ($mock) use ($tracker) {
+            $mock->shouldReceive('trackerForQuotation')->andReturn($tracker);
+            $mock->shouldReceive('addReference')->andReturnNull();
+            $mock->shouldReceive('recordActivity')->andReturn(new \App\Models\OrderTrackerActivity);
+        });
+        $service = app(\App\Domain\Ventas\LicitacionesProveedor\Services\SupplierBidService::class);
+        $data = ['supplier_id' => 1, 'items' => [11 => ['quantity' => 2, 'unit_cost' => 10]]];
+        $bid = $service->createOrUpdateBid(QuotationRequest::findOrFail(1), $data, auth()->user());
+        $this->assertEquals('BID-SC-TEST-Q1-S1', $bid->reference);
+        DB::table('quotation_requests')->where('id', 1)->update(['reference' => 'SC-RENAMED']);
+        $repository = app(\App\Domain\Ventas\LicitacionesProveedor\Support\SupplierBidResponseRepository::class);
+        $reused = $repository->bidForSupplier(QuotationRequest::findOrFail(1), Entity::findOrFail(1), auth()->user());
+        $this->assertEquals($bid->id, $reused->id);
+        $this->assertEquals($bid->reference, $reused->reference, 'Historical bid labels remain intact');
+        $again = $service->createOrUpdateBid(QuotationRequest::findOrFail(1), $data, auth()->user());
+        $this->assertEquals($bid->id, $again->id);
+        $this->assertEquals(1, $again->items->count());
+        $this->assertEquals(2, \App\Models\SupplierBid::count());
+    }
+
+    public function test_new_supplier_bid_does_not_reuse_a_deleted_sequence_number(): void
+    {
+        DB::table('supplier_bids')->insert(['quotation_request_id' => 1, 'supplier_id' => 2, 'reference' => 'BID-SC-TEST-002']);
+        [$response] = $this->save(1, ['line' => $this->row()]);
+        $this->assertCount(1, $response->fresh()->items);
+        $this->assertEquals('BID-SC-TEST-002', \App\Models\SupplierBid::where('supplier_id', 2)->value('reference'));
     }
 
     private function save(int $supplier, array $rows, $response = null, ?string $revision = null, float $freight = 3): array
@@ -228,9 +328,91 @@ class PreliquidationPersistenceTest extends TestCase
         $this->assertEquals(6.92, $rowResult['subtotal_exw']);
         $this->assertEquals(3.67, $rowResult['cif']);
         $this->assertEqualsWithDelta(4.73, $rowResult['ddp'], 0.01);
-        $this->assertEqualsWithDelta(6.76, $rowResult['price'], 0.01);
+        $this->assertEqualsWithDelta(6.76, $rowResult['suggested_price'], 0.01);
+        $this->assertEquals(19.10, $rowResult['price']);
         $this->assertEquals(19.10, $rowResult['assigned_unit']);
         $this->assertEquals(38.20, $rowResult['assigned_total']);
+    }
+
+    public function test_exact_client_price_in_either_currency_survives_save_and_reload(): void
+    {
+        Schema::table('supplier_bid_response_items', function (Blueprint $table) {
+            foreach (['preliquidated_unit_price', 'preliquidated_unit_price_nio', 'ddp_unit_cost', 'cif_unit_cost', 'margin_percentage'] as $column) {
+                $table->decimal($column, 18, 2)->nullable();
+            }
+        });
+        foreach (['assigned_nio' => 3500, 'assigned_usd' => 100] as $field => $amount) {
+            $supplier = $field === 'assigned_nio' ? 1 : 2;
+            $row = array_replace($this->row(), ['assigned_nio' => null, 'assigned_usd' => null, $field => $amount, 'quoted_quantity' => 12]);
+            [$response, $map] = $this->save($supplier, ['a' => $row]);
+            $item = SupplierBidResponseItem::findOrFail($map['a']);
+            $expectedNio = $field === 'assigned_nio' ? 3500 : 3700;
+            $this->assertEquals($expectedNio, $item->preliquidated_unit_price_nio);
+            $this->assertEquals(round($expectedNio / 37, 2), $item->preliquidated_unit_price);
+            $reloaded = app(PreliquidationCalculator::class)->forResponse($response->fresh());
+            $this->assertEqualsWithDelta($expectedNio * 12, $reloaded['sales_nio'], 0.000001);
+            $form = new PreliquidationFormHarness;
+            $form->selectedQuoteId = 1;
+            $form->editSupplierResponse($response->id);
+            $this->assertEquals($amount, array_values($form->supplierBidExtraItems)[0][$field]);
+        }
+    }
+
+    public function test_editing_final_price_replaces_previous_currency_and_clearing_restores_margin(): void
+    {
+        $form = new PreliquidationFormHarness;
+        $form->preliquidation = array_replace(PreliquidationCalculator::defaults(), ['exchange' => 37]);
+        $form->supplierBidExtraItems = [];
+        $form->supplierBidItems = [1 => array_replace($this->row(), ['assigned_nio' => 3500])];
+        $form->updatedSupplierBidItems(3500, '1.assigned_nio');
+        $this->assertNull($form->supplierBidItems[1]['assigned_usd']);
+        $this->assertEqualsWithDelta(7000, $form->preliquidationTotals()['sales_nio'], 0.000001);
+        $form->supplierBidItems[1]['assigned_usd'] = 100;
+        $form->updatedSupplierBidItems(100, '1.assigned_usd');
+        $this->assertNull($form->supplierBidItems[1]['assigned_nio']);
+        $this->assertEquals(200, $form->preliquidationTotals()['sales']);
+        $form->supplierBidItems[1]['assigned_usd'] = '';
+        $form->updatedSupplierBidItems('', '1.assigned_usd');
+        $totals = $form->preliquidationTotals();
+        $this->assertEquals($totals['rows'][1]['suggested_price'], $totals['rows'][1]['price']);
+        $form->supplierBidExtraItems = ['new_a' => $this->row()];
+        $form->updatedSupplierBidExtraItems(370, 'new_a.assigned_nio');
+        $this->assertNull($form->supplierBidExtraItems['new_a']['assigned_usd']);
+    }
+
+    public function test_invalid_manual_client_price_is_rejected_before_saving(): void
+    {
+        foreach (['assigned_nio' => -3500, 'assigned_usd' => 'invalid'] as $field => $value) {
+            try {
+                $this->save(1, ['a' => array_replace($this->row(), [$field => $value])]);
+                $this->fail('Expected invalid price rejection');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('rows.a.'.$field, $exception->errors());
+                $this->assertEquals(0, SupplierBidResponseItem::count());
+            }
+        }
+    }
+
+    public function test_open_rfq_assignment_reports_inline_errors_and_confirms_success(): void
+    {
+        $open = SupplierRfqDocument::create(['quotation_request_id' => 1, 'status' => SupplierRfqDocument::STATUS_SENT_TO_SUPPLIER]);
+        $component = \Livewire\Livewire::test(OpenRfqAssignmentHarness::class)
+            ->call('establishOpenRfqSupplier')
+            ->assertHasErrors('responseSupplierName')
+            ->assertNotDispatched('rfq-supplier-established');
+        $this->assertNull($open->fresh()->supplier_id);
+        $component->set('responseSupplierName', 'Supplier 1')
+            ->call('establishOpenRfqSupplier')
+            ->assertHasErrors('responseSupplierName')
+            ->assertNotDispatched('rfq-supplier-established');
+        $this->assertNull($open->fresh()->supplier_id);
+        $component->set('responseSupplierName', 'New supplier')
+            ->call('establishOpenRfqSupplier')
+            ->assertHasNoErrors()
+            ->assertDispatched('rfq-supplier-established');
+        $supplierId = Entity::where('name', 'New supplier')->value('id');
+        $this->assertEquals($supplierId, $open->fresh()->supplier_id);
+        $component->assertSet('selectedSupplierId', (string) $supplierId);
     }
 
     public function test_update_cost_total_calculates_rate_per_pound_from_weight(): void
@@ -273,6 +455,22 @@ class PreliquidationPersistenceTest extends TestCase
     }
 }
 
+class OpenRfqAssignmentHarness extends \Livewire\Component
+{
+    use \App\Livewire\Ventas\Concerns\QuotationProcess\SupplierBidResponses\PersistsSupplierBidResponses;
+
+    public string $responseSupplierName = '';
+    public string $supplierContactName = '';
+    public string $selectedSupplierId = '';
+
+    public function supplierRfqDocumentForSelectedSupplier(): ?SupplierRfqDocument
+    {
+        return SupplierRfqDocument::where('quotation_request_id', 1)->whereNull('supplier_id')->first();
+    }
+
+    public function render() { return '<div></div>'; }
+}
+
 class PreliquidationFormHarness extends \stdClass
 {
     use \App\Livewire\Ventas\Concerns\QuotationProcess\SupplierBidResponses\ManagesSupplierBidForm;
@@ -286,4 +484,38 @@ class PreliquidationFormHarness extends \stdClass
     public function selectedQuote(): QuotationRequest { return QuotationRequest::with('items')->findOrFail($this->selectedQuoteId); }
     public function addError($key, $message): void { $this->errors[$key] = $message; }
     public function dispatch($event, ...$args): void { $this->dispatched[$event] = $args; }
+}
+
+class PreliquidationSaveHarness extends \Livewire\Component
+{
+    use \App\Livewire\Ventas\Concerns\QuotationProcess\SupplierBidResponses\ManagesSupplierBidForm;
+    use \App\Livewire\Ventas\Concerns\QuotationProcess\SupplierBidResponses\ManagesPreliquidation;
+    use \App\Livewire\Ventas\Concerns\QuotationProcess\SupplierBidResponses\PersistsSupplierBidResponses;
+
+    public int $selectedQuoteId = 1;
+    public string $selectedSupplierId = '1';
+    public string $supplierCurrency = 'USD';
+    public string $supplierCurrencyExchangeRate = '37';
+    public string $supplierContactName = '';
+    public string $supplierPaymentTerms = '';
+    public string $supplierDeliveryTime = '';
+    public string $supplierWarranty = '';
+    public string $supplierValidUntil = '';
+    public string $supplierNotes = '';
+    public array $supplierBidItems = [];
+    public array $supplierBidExtraItems = [];
+    public array $supplierBidDeletedItemIds = [];
+    public array $supplierBidItemVersions = [];
+    public array $supplierProformas = [];
+    public array $supplierItemProformas = [];
+    public ?int $activeSupplierBidResponseId = null;
+    public ?int $editingSupplierResponseId = null;
+    public ?string $advanceStageError = null;
+    public int $bidStep = 2;
+
+    public function updatedSupplierCurrency(): void { $this->supplierCurrencyExchangeRate = '37'; }
+    public function selectedQuote(): QuotationRequest { return QuotationRequest::with(['items', 'supplierRfqDocuments'])->findOrFail(1); }
+    public function supplierRfqDocumentForSelectedSupplier(): SupplierRfqDocument { return SupplierRfqDocument::where('supplier_id', 1)->firstOrFail(); }
+    public function supplierForResponse(SupplierRfqDocument $rfq): Entity { return Entity::findOrFail($rfq->supplier_id); }
+    public function render() { return '<div></div>'; }
 }

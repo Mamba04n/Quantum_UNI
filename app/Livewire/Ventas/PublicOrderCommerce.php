@@ -38,6 +38,6 @@ class PublicOrderCommerce extends Component
     {
         abort_unless(auth()->user()->can('public_tracking.view') || auth()->user()->can('payment_links.view'), 403);
 
-        return view('livewire.ventas.public-order-commerce', ['tracker' => OrderTracker::where('public_sale_order_id', $this->orderId)->first(), 'links' => auth()->user()->can('payment_links.view') ? PaymentLink::where('sale_order_id', $this->orderId)->latest('id')->limit(5)->get() : collect(), 'labels' => PublicTrackingService::LABELS]);
+        return view('livewire.ventas.public-order-commerce', ['tracker' => OrderTracker::where('public_sale_order_id', $this->orderId)->first(), 'links' => config('academic.show_payment_extensions', false) && auth()->user()->can('payment_links.view') ? PaymentLink::where('sale_order_id', $this->orderId)->latest('id')->limit(5)->get() : collect(), 'labels' => PublicTrackingService::LABELS]);
     }
 }
